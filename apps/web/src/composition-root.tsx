@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   attachErrorCardCreation,
+  attachGamification,
   createEgressGuard,
   createEventBus,
   createPipelineRunner,
@@ -112,6 +113,7 @@ export function useCorrectionApp(): CorrectionApp {
   useEffect(() => {
     let cancelled = false;
     let detachErrorCards: (() => void) | null = null;
+    let detachGamification: (() => void) | null = null;
     (async () => {
       try {
         const { openSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
@@ -129,6 +131,10 @@ export function useCorrectionApp(): CorrectionApp {
           storage: storageRef.current,
           clock: systemClock,
         }).detach;
+        detachGamification = attachGamification(app.bus, {
+          storage: storageRef.current,
+          clock: systemClock,
+        }).detach;
         const stored = await storageRef.current.query<SessionRecord>('sessions', {});
         if (!cancelled) {
           setSessions([...stored].sort((a, b) => b.createdAtMs - a.createdAtMs));
@@ -142,6 +148,7 @@ export function useCorrectionApp(): CorrectionApp {
     return () => {
       cancelled = true;
       detachErrorCards?.();
+      detachGamification?.();
     };
   }, [app.bus]);
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { GamificationError } from './errors.ts';
-import { addXp, makeXp } from './xp.ts';
+import { addXp, makeXp, XP_RULES, xpForCardReview, xpForSession } from './xp.ts';
 
 describe('XP value object', () => {
   it('wraps a non-negative integer amount', () => {
@@ -19,5 +19,13 @@ describe('XP value object', () => {
 
     expect(addXp(base, makeXp(50))).toBe(150);
     expect(base).toBe(100);
+  });
+
+  it('awards the documented amount for a completed session', () => {
+    expect(xpForSession()).toBe(XP_RULES.PER_SESSION);
+  });
+
+  it('awards the documented amount for a reviewed card', () => {
+    expect(xpForCardReview()).toBe(XP_RULES.PER_CARD_REVIEW);
   });
 });

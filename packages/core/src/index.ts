@@ -57,7 +57,30 @@ export { createEventBus, type EventBus, type Unsubscribe } from './events/event-
 // gamification
 export { GamificationError } from './contexts/gamification/errors.ts';
 export { makeStreak, type LocalDay, type Streak } from './contexts/gamification/streak.ts';
-export { addXp, makeXp, type Xp } from './contexts/gamification/xp.ts';
+export {
+  addXp,
+  makeXp,
+  XP_RULES,
+  xpForCardReview,
+  xpForSession,
+  type Xp,
+} from './contexts/gamification/xp.ts';
+export { localDayOf, previousDay } from './contexts/gamification/local-day.ts';
+export {
+  applySpeech,
+  freshDailyProgress,
+  STREAK_RULES,
+  type DailyProgress,
+  type SpeechApplication,
+  type SpeechOutcome,
+} from './contexts/gamification/streak-rule.ts';
+export {
+  attachGamification,
+  GAMIFICATION_COLLECTION,
+  type GamificationPolicy,
+  type GamificationPolicyDeps,
+  type GamificationState,
+} from './contexts/gamification/gamification-policy.ts';
 
 // identity
 export { makeConsent, type Consent } from './contexts/identity/consent.ts';

@@ -90,6 +90,13 @@ export function createPipelineRunner(deps: PipelineRunnerDeps): PipelineRunner {
       const current = ((): PipelineState => state)(); // dispatch a muté l'état fermé
       if (current.phase === 'READY') {
         publishDetectedErrors(deps.events, current.correction);
+        // Approximation MVP : parole détectée = durée du clip (pas de VAD) —
+        // le clip est démarré/arrêté manuellement, écart noté dans SPRINTS.
+        deps.events?.publish({
+          kind: 'SessionCompleted',
+          sessionId: current.clipId,
+          spokenMs: lastClip?.durationMs ?? 0,
+        });
         deps.onReady?.({
           clipId: current.clipId,
           transcription: current.transcription,

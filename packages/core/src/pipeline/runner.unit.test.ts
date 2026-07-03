@@ -239,6 +239,28 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     ]);
   });
 
+  it('publishes SessionCompleted with the detected speech duration when reaching READY', async () => {
+    const bus = createEventBus();
+    const completed: DomainEvent[] = [];
+    bus.subscribe('SessionCompleted', (event) => {
+      completed.push(event);
+    });
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection(),
+      variant: 'en-US',
+      onState: () => {},
+      events: bus,
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(completed).toEqual([
+      { kind: 'SessionCompleted', sessionId: 'clip-1', spokenMs: 1000 },
+    ]);
+  });
+
   it('publishes nothing on failure and works without a bus', async () => {
     const bus = createEventBus();
     const detected: DomainEvent[] = [];

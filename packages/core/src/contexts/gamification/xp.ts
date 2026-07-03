@@ -13,3 +13,16 @@ export function makeXp(amount: number): Xp {
 export function addXp(base: Xp, gained: Xp): Xp {
   return makeXp(base + gained);
 }
+
+export const XP_RULES = {
+  PER_SESSION: 10,
+  PER_CARD_REVIEW: 2,
+} as const;
+
+export function xpForSession(): Xp {
+  return makeXp(XP_RULES.PER_SESSION);
+}
+
+export function xpForCardReview(): Xp {
+  return makeXp(XP_RULES.PER_CARD_REVIEW);
+}
