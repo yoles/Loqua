@@ -49,6 +49,15 @@ export { addXp, makeXp, type Xp } from './contexts/gamification/xp.ts';
 export { makeConsent, type Consent } from './contexts/identity/consent.ts';
 export { IdentityError } from './contexts/identity/errors.ts';
 
+// pipeline
+export { PipelineError } from './pipeline/errors.ts';
+export {
+  INITIAL_PIPELINE_STATE,
+  transition,
+  type PipelineEvent,
+  type PipelineState,
+} from './pipeline/pipeline.ts';
+
 // ports (contrats §9 — source de vérité technique)
 export type { AudioClip, AudioFormat } from './ports/audio-clip.ts';
 export type { ClockPort } from './ports/clock-port.ts';
