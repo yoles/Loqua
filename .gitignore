@@ -3,3 +3,7 @@ spikes/
 
 node_modules/
 .idea/
+
+# secrets — jamais committés
+.env*
+.dev.vars

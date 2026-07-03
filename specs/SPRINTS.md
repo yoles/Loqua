@@ -13,9 +13,10 @@
 4. **Pas de `Date.now()`/`Math.random()` dans le core** → `ClockPort` / source injectée.
 5. **Toute sortie LLM validée par Zod** avant d'entrer dans le core ; JSON malformé géré explicitement.
 6. **Un seul point de sortie réseau pour le contenu** : `egressGuard`. Aucun `fetch` de contenu ailleurs.
-7. **Tests par régime** (§16) : TDD/BDD (Vitest) sur le déterministe · eval harness sur l'IA. Un lot sans son test n'est pas « Done ».
+7. **Tests par régime** (§16) : TDD + tests comportementaux Vitest sur le déterministe · eval harness sur l'IA. Un lot sans son test n'est pas « Done ».
 8. **Conflit avec un invariant (§1)** → s'arrêter et remonter, ne pas contourner.
-9. **⚠️ = point de décision utilisateur** : s'arrêter et demander avant de continuer.
+9. **⚠️ / CHECKPOINT = arrêt obligatoire** : le run s'arrête et attend l'utilisateur (validation humaine ou ressource manquante). Tout le reste s'enchaîne sans demander.
+10. **Secrets** : les clés vivent dans `services/api/.dev.vars` (gitignoré, comme tout `.env*`). **Jamais** de secret committé ni mis en dur dans le code.
 
 ---
 
@@ -33,7 +34,7 @@
 
 | Lot | Livrable | Done quand |
 |---|---|---|
-| **1.1 Scaffold monorepo** | pnpm + Turborepo ; packages `core`, `apps/web`, `services/api`, `tooling/eval`, `ui-web` ; TS strict partout (`core` : `lib: ["ES2022"]`, zéro lib DOM/Node) ; Vitest branché. | `pnpm install && pnpm build && pnpm test` passent (tests vides OK). |
+| **1.1 Scaffold monorepo** | pnpm (via `corepack enable pnpm`, épingler `packageManager`) + Turborepo ; packages `core`, `adapters-web`, `ui-web`, `apps/web`, `services/api`, `tooling/eval` (structure = ARCHITECTURE §5 ; `adapters-tauri` sera créé au Sprint 4) ; TS strict partout (`core` : `lib: ["ES2022"]`, zéro lib DOM/Node) ; Vitest branché. | `pnpm install && pnpm build && pnpm test` passent (tests vides OK). |
 | **1.2 Garde-fou d'archi** | dependency-cruiser : règle « `core` n'importe aucun package externe ni aucune app », branchée dans le build. | Un import interdit ajouté à la main dans `core` **casse** `pnpm lint:deps`. Retirer l'import après la preuve. |
 | **1.3 Le langage du domaine** | Value objects des 5 contexts (§7-9) : `Word`, `Phoneme`, `IPA`, `Correction`, `CorrectionCategory`, `UnscoredComparison`, `Card`, `Streak`… Immuables, TDD. | Tests unitaires verts ; aucun VO ne dépend d'un framework. |
 | **1.4 Les contrats (ports)** | Interfaces §9 : `TranscriptionPort`, `CorrectionPort`, `SpeechSynthesisPort`, `PronunciationScoringPort` (→ `UnscoredComparison` par défaut), `StoragePort`, `ModelRuntimePort`, `ClockPort`. Signatures TS = copie conforme de §9. | Compile ; revue croisée signature ↔ §9. |
@@ -54,10 +55,12 @@
 | **2.1 Machine à états du pipeline** | Reducer TS pur dans le core (§6) : `IDLE → RECORDING → TRANSCRIBING → CORRECTING → READY` + erreurs/annulation. TDD exhaustif. | Toutes les transitions testées, y compris les invalides. |
 | **2.2 `egressGuard`** | La fonction unique qui autorise (ou non) la sortie de **texte** : consentement + opt-in + capacité adapter (§15). L'audio n'est **jamais** autorisé. TDD + scénarios BDD. | Tests verts, dont « audio → refus inconditionnel ». |
 | **2.3 STT local (web)** | Adapter `TranscriptionPort` : `@huggingface/transformers` (Whisper), WebGPU si dispo → fallback WASM (acquis Spike #1). Download modèle à la 1ʳᵉ utilisation via `ModelRuntimePort` (§11 : progressif, checksum). | Un WAV de test est transcrit dans le navigateur ; l'audio ne quitte pas la machine. |
-| **2.4 Backend fin + correction cloud-ZDR** | `services/api` (Hono) : endpoint proxy LLM **ZDR, texte seul**. Adapter `CorrectionPort` web qui passe par `egressGuard`, sortie validée Zod (schéma §9), gestion JSON malformé. ⚠️ **Demander à l'utilisateur : fournisseur LLM + clé API.** | Une phrase fautive → JSON de corrections catégorisées + explications valide. |
+| **2.4 Backend fin + correction cloud-ZDR** | `services/api` (Hono) : endpoint proxy LLM **ZDR, texte seul**. Adapter `CorrectionPort` web qui passe par `egressGuard`, sortie validée Zod (schéma §9), gestion JSON malformé. **Décidé (2026-07-03) : Anthropic Claude API**, modèle `claude-sonnet-5` (option éco : `claude-haiku-4-5`). Clé `ANTHROPIC_API_KEY` lue depuis `services/api/.dev.vars` (dev local : `wrangler dev`, pas de compte Cloudflare requis). ⚠️ **Si la clé est absente : s'arrêter et la demander** (seul arrêt légitime de ce sprint hors checkpoint). | Une phrase fautive → JSON de corrections catégorisées + explications valide. |
 | **2.5 Eval de la correction** | Golden set 50-100 énoncés « dev » (standup, code review, incident) + assertions sémantiques + LLM-juge (§16). Obligatoire **avant** d'itérer sur le prompt. | `pnpm eval` sort un score ; baseline enregistrée. |
 | **2.6 UI : enregistrer → diff** | Next.js (App Router) + FSD : page d'enregistrement micro (consentement §15), états du pipeline visibles, **vue diff original↔corrigé cliquable** (chaque correction ouvre catégorie + explication). | Boucle complète au clavier/micro en local ; diff lisible et cliquable. |
 | **2.7 Persistance des sessions** | Sessions + corrections sauvées via `StoragePort` ; historique listable ; composition root de l'app web assemble tous les adapters (DI, §20). | Refresh navigateur → l'historique est là. `eraseAll()` accessible dans l'UI (réglages). |
+
+| **2.8 🛑 CHECKPOINT MVP** | Fin du run automatique pour ce sprint : l'utilisateur teste la boucle complète **au micro réel** (enregistrer → diff), vérifie la qualité de correction et l'UX. | L'utilisateur valide explicitement → le run reprend au Sprint 3. |
 
 **Done Sprint 2 = MVP :** la question du PRD (« la correction async apporte-t-elle une valeur que ChatGPT ne donne pas ? ») est testable en vrai, sur ta machine.
 
@@ -69,7 +72,7 @@
 |---|---|---|
 | **3.1 Moteur SRS** | Context SRS dans le core : algorithme FSRS (ou SM-2 si FSRS trop lourd — trancher au moment venu et le noter), `ClockPort` injecté, **100 % testé**. | Suite TDD complète : intervalles, oublis, réinsertion. |
 | **3.2 Erreurs → cartes** | Event `ErrorDetected` (émis en 2.4) → création de `Card` (copie de valeur : survit à la suppression de la session, §13). | Test d'intégration event bus → SRS ; suppression de session ne casse pas les cartes. |
-| **3.3 Streak + XP** | Context gamification : règle du streak en **scénarios Gherkin** (fuseau, bascule de jour, ≥ 1 min parlée), XP par session/mot. | Scénarios BDD verts. |
+| **3.3 Streak + XP** | Context gamification : règle du streak en **tests comportementaux Vitest** (un cas par règle : fuseau, bascule de jour, ≥ 1 min parlée — pas de format Gherkin/`.feature`), XP par session/mot. | Tests comportementaux verts. |
 | **3.4 UI review** | Écran deck du jour (cartes dues) + widget streak/XP sur l'accueil. | Une session de review complète fonctionne offline. |
 
 **Done Sprint 3 :** tes fautes d'hier reviennent te chercher aujourd'hui. C'est le différenciateur.
@@ -82,8 +85,10 @@
 |---|---|---|
 | **4.1 Coquille Tauri** | `/apps/desktop` (Tauri 2) réutilisant le frontend web tel quel (acquis Spike #3). SQLite natif (SQLCipher) derrière le même `StoragePort`. | L'app desktop affiche l'UI du Sprint 2-3 avec persistance native. |
 | **4.2 STT natif** | `/adapters-tauri` : `TranscriptionPort` → whisper.cpp (whisper-rs), audio passé **par chemin de fichier**, IPC validé (§15). | Transcription native dans l'app ; RTF ≈ 0,15× confirmé. |
-| **4.3 LLM local** | Adapter `CorrectionPort` → llama.cpp en sidecar. ⚠️ **Demander à l'utilisateur : modèle retenu** (taille vs qualité, sa machine = RTX 3050 8 Go). Passer l'eval 2.5 : si la qualité locale est trop en retrait, le **documenter** et garder le choix local/cloud visible. | La correction tourne sans réseau ; score eval enregistré et comparé au cloud. |
+| **4.3 LLM local** | Adapter `CorrectionPort` → llama.cpp en sidecar. **Décidé (2026-07-03) : Qwen3-8B quantifié Q4** (GGUF Q4_K_M, ~5 Go — machine cible : RTX 3050 8 Go, offload partiel accepté). Passer l'eval 2.5 : si la qualité locale est trop en retrait du cloud, le **documenter** et garder le choix local/cloud visible. | La correction tourne sans réseau ; score eval enregistré et comparé au cloud. |
 | **4.4 Composition root desktop** | DI desktop : tout local par défaut (invariant : cloud = opt-in explicite même ici). | **Débrancher le réseau → la boucle complète fonctionne.** C'est le test du positionnement. |
+
+| **4.5 🛑 CHECKPOINT 100 % local** | Fin du run automatique pour ce sprint : l'utilisateur teste l'app desktop **réseau débranché** (boucle complète offline) et compare la qualité de correction local vs cloud (eval 4.3). | L'utilisateur valide explicitement → le run reprend au Sprint 5. |
 
 **Done Sprint 4 :** la promesse du PRD (« la voix ne quitte pas la machine, et même le texte peut ne pas sortir ») est démontrable.
 

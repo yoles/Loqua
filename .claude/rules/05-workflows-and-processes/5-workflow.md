@@ -28,5 +28,6 @@ Ordre pour une nouvelle brique :
 
 Commits :
 - Message court, en FRANÇAIS, style `feat:` / `fix:` / `chore:` / `test:` / `docs:` / `refactor:`
-- Ne committer que si l'utilisateur le demande explicitement
+- En exécution de `specs/SPRINTS.md` (run planifié) : committer à chaque lot « Done » sans redemander
+- Hors exécution du plan : ne committer que si l'utilisateur le demande explicitement
 - Conflit entre une tâche et un invariant (§1) → s'arrêter et remonter, ne pas contourner

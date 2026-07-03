@@ -143,7 +143,7 @@ Cinq contextes, langages distincts. Ne pas les fusionner.
 ### Gamification
 - **Langage :** `XP`, `Streak`, `Level`, `Rank`, `Badge`, `Challenge`.
 - **Piloté par événements** (ne lit pas directement les autres contextes).
-- **Règle du Streak à spécifier au test près :** fuseau = fuseau local de l'appareil ; le jour bascule à minuit local ; « ≥ 60 s de parole *détectée* » (pas micro ouvert) ; cumul autorisé sur la journée. À couvrir par scénarios Gherkin (§17).
+- **Règle du Streak à spécifier au test près :** fuseau = fuseau local de l'appareil ; le jour bascule à minuit local ; « ≥ 60 s de parole *détectée* » (pas micro ouvert) ; cumul autorisé sur la journée. À couvrir par tests comportementaux Vitest, un cas par règle (§16).
 
 ### Identity & Billing
 - **Langage :** `Account`, `Subscription`, `Entitlement`, `Consent` (dont consentement biométrique RGPD art. 9).
@@ -371,7 +371,7 @@ Les consommateurs (SRS, gamification) gèrent `UnscoredComparison` **dès mainte
 
 | Cible | Régime | Outillage |
 |---|---|---|
-| SRS, gamification, streak, machine à états, taxonomie, `egressGuard` | **TDD + BDD (Gherkin)** | Vitest ; `core` testé en Node pur ; `ClockPort` injecté (pas de `Date.now`) |
+| SRS, gamification, streak, machine à états, taxonomie, `egressGuard` | **TDD + tests comportementaux** (BDD-style : `describe`/`it` en phrases du langage ubiquitaire ; pas de format Gherkin/`.feature` dédié) | Vitest ; `core` testé en Node pur ; `ClockPort` injecté (pas de `Date.now`) |
 | Sortie JSON de correction | **Contrat strict** | Zod (schéma = §9) ; test de validité + gestion du malformé (les LLM en produisent) |
 | Qualité de correction (LLM) | **Eval harness** | `/tooling/eval` : golden set 50-100 énoncés dev + refs, assertions **sémantiques**, LLM-juge, non-régression |
 | Scoring (GOP) | **Eval harness** | Corrélation vs corpus annoté (SpeechOcean762) |
@@ -426,7 +426,7 @@ Ils informent la forme finale des ports (streaming vs batch, faisabilité local)
 
 ### Étape 3 — Le fossé (SRS + rétention)
 - Contexte SRS (SM-2/FSRS, 100 % testé), events `ErrorDetected`→`Card`.
-- Gamification : streak + XP (scénarios Gherkin sur le streak).
+- Gamification : streak + XP (tests comportementaux Vitest sur le streak, un cas par règle).
 
 ### Étape 4 — Desktop 100 % local
 - `/apps/desktop` (Tauri) réutilisant le frontend web.
