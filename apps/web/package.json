@@ -1,0 +1,14 @@
+{
+  "name": "@loqua/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@loqua/adapters-web": "workspace:*",
+    "@loqua/core": "workspace:*",
+    "@loqua/ui-web": "workspace:*"
+  }
+}

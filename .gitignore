@@ -4,6 +4,12 @@ spikes/
 node_modules/
 .idea/
 
+# artefacts de build
+.turbo/
+dist/
+.next/
+coverage/
+
 # secrets — jamais committés
 .env*
 .dev.vars

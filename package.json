@@ -1,0 +1,15 @@
+{
+  "name": "loqua",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint:deps": "turbo run lint:deps"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
