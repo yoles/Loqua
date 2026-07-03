@@ -4,11 +4,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --noEmit"
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "test": "vitest run"
   },
   "dependencies": {
     "@loqua/adapters-web": "workspace:*",
     "@loqua/core": "workspace:*",
-    "@loqua/ui-web": "workspace:*"
+    "@loqua/ui-web": "workspace:*",
+    "next": "^16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3"
   }
 }

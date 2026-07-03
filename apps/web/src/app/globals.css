@@ -1,0 +1,156 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #17181c;
+  --muted: #5c6270;
+  --accent: #4650dd;
+  --accent-fg: #ffffff;
+  --surface: #f4f5f8;
+  --danger: #b3261e;
+  --ok: #1a7f37;
+  --mark: #fff3bf;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131417;
+    --fg: #e8eaef;
+    --muted: #9aa1af;
+    --accent: #8b93ff;
+    --accent-fg: #131417;
+    --surface: #1d1f24;
+    --danger: #ff7369;
+    --ok: #57ab5a;
+    --mark: #4d3f00;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.55;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+button {
+  font: inherit;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--fg);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button.primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+button.recording {
+  background: var(--danger);
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-line {
+  color: var(--muted);
+  font-size: 0.9rem;
+  min-height: 1.4em;
+}
+
+.tier-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.78rem;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.panel {
+  background: var(--surface);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-block: 1rem;
+}
+
+.error-panel {
+  border-inline-start: 4px solid var(--danger);
+}
+
+.diff-original {
+  color: var(--muted);
+  text-decoration-color: color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+.diff-corrected {
+  font-size: 1.12rem;
+}
+
+mark {
+  background: var(--mark);
+  border-radius: 0.2rem;
+  padding: 0 0.15rem;
+}
+
+ul.corrections {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.correction-item > button {
+  width: 100%;
+  text-align: start;
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+
+.correction-type {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.correction-explanation {
+  margin: 0.35rem 0 0.1rem;
+  padding-inline-start: 0.75rem;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--muted);
+}
+
+progress {
+  width: 100%;
+}

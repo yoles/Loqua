@@ -14,10 +14,9 @@ export type {
 export { decodeToPcm16k, resampleLinear } from './stt/audio-decode.ts';
 export { createTransformersAsrEngineFactory } from './stt/transformers-asr-engine.ts';
 export { createWhisperTranscriptionPort } from './stt/whisper-transcription-port.ts';
-export {
-  openSqliteDatabase,
-  type OpenedSqliteDatabase,
-} from './storage/opfs-database.ts';
+// NB : openSqliteDatabase (sqlite-wasm/OPFS) est exposé via le sous-export
+// '@loqua/adapters-web/sqlite' — son worker dynamique ne doit être tiré que là
+// où on l'utilise vraiment (bundlers).
 export {
   type SqliteExecutor,
   type SqliteParam,
