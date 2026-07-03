@@ -409,7 +409,7 @@ Les consommateurs (SRS, gamification) gèrent `UnscoredComparison` **dès mainte
 ### Étape 0 — Spikes de dé-risquage (AVANT le core définitif)
 Ils informent la forme finale des ports (streaming vs batch, faisabilité local).
 1. **Spike WebGPU/WASM** : Whisper + Kokoro + LLM 1-3B dans le navigateur sur machine réaliste. Mesurer latence, RAM, cold start, taille download. → confirme la viabilité du "web local" ou le cantonne à l'Option B cloud. — ✅ **Fait (2026-07-03) : GO partiel** (STT/TTS OK à 0,13-0,21× RTF, 0 % WER sur audio propre ; mais WebGPU-navigateur impraticable sous Linux/NVIDIA → web = lite, 100 % local = Tauri ; LLM navigateur non fiable → cloud-ZDR par défaut). Détail dans [`SPIKES.md`](SPIKES.md) §5.
-2. **Spike scoring GOP** : wav2vec2 + alignement + score phonème sur échantillons. → confirme si le GOP local est atteignable.
+2. **Spike scoring GOP** : wav2vec2 + alignement + score phonème sur échantillons. → confirme si le GOP local est atteignable. — ✅ **Fait (2026-07-03) : NO-GO** pour le scoring chiffré non-supervisé (PCC mot 0,25, F1 détection 0,29 sur SpeechOcean762 ; les deux formulations GOP donnent le même plafond → confirme `ear-compare` en V1, le scoring chiffré reste une piste R&D supervisée hors MVP). Détail dans [`SPIKES.md`](SPIKES.md) §7.
 3. **Spike Tauri + sidecar** : `whisper.cpp` piloté depuis le frontend web via IPC. → valide le pattern "même UI, adapters substitués". — ✅ **Fait (2026-07-03) : GO** (whisper.cpp natif CPU à RTF 0,151×, transcript exact, `core` agnostique de Tauri, audio par chemin de fichier — sans aucun flag/sandbox, contrairement au web). Détail dans [`SPIKES.md`](SPIKES.md) §6.
 
 ### Étape 1 — Fondations

@@ -260,5 +260,36 @@ whisper.cpp natif CPU atteint **0,151×** — équivalent au WebGPU navigateur (
 **Tauri est le véhicule robuste du 100 % local desktop**, comme le postulait l'archi. Là où le navigateur exige flags/sandbox/precision-hacks (Spike #1), Tauri parle au natif directement. Bonus non testé : feature CUDA de `whisper-rs` → la RTX 3050 accélérerait encore. Décision d'archi (100 % local = desktop/Tauri ; web = vitrine/lite) **confirmée sur les deux bouts** (#1 + #3).
 
 ### Reste
-- **Spike #2 (scoring GOP)** — le seul non fait ; R&D indépendante (Python), hors chemin critique du MVP.
+- **Spike #2 (scoring GOP)** — fait le 2026-07-03, voir §7 ci-dessous.
 - Le pipeline complet local desktop (STT natif → LLM local llama.cpp → TTS Kokoro natif) reste à assembler, mais les briques STT sont prouvées (natif #3 + WASM #1).
+
+---
+
+## 7. Résultats — Spike #2 (2026-07-03) · verdict **NO-GO** (scoring chiffré non-supervisé)
+
+> Harness jetable **non versionné** (`spikes/spike-2-gop-scoring/`, gitignoré). Seul ce verdict fait foi.
+
+### Setup
+Même machine, **torch/torchaudio CPU** (le mismatch CUDA `libcudart.so.13` a fait abandonner le GPU — sans conséquence, les énoncés sont courts). Modèle phonème `facebook/wav2vec2-lv-60-espeak-cv-ft` (vocab 392, sortie IPA eSpeak). Corpus **SpeechOcean762** (test), **N = 100 énoncés / 488 mots**. Alignement forcé CTC (Viterbi) **réimplémenté en NumPy** (torchaudio inutilisable). Texte de référence phonémisé via `phonemizer`/espeak-ng.
+
+### Mesures (GOP non-supervisé)
+
+| Métrique | Mesuré | Seuil | Verdict |
+|---|---|---|---|
+| **PCC mot** (GOP vs accuracy humaine) | **0,25** | ≥ 0,55 GO · < 0,40 NO-GO | ❌ NO-GO |
+| **PCC phrase** | 0,42 | repère Azure ≈ 0,6-0,7 | zone grise |
+| **Détection binaire « mot raté » (F1)** | **0,29** | ≥ 0,70 | ❌ très en dessous |
+| Latence / énoncé (RTF, CPU) | 0,093× · médiane 308 ms | ≤ 2 s/mot | ✅ (mais hors sujet) |
+
+**Contrôle méthodo important :** testé les **deux formulations** de GOP — moyenne brute du log-posterior de la cible, **et** GOP normalisé Witt & Young (cible − meilleur concurrent par frame). Résultat **identique** (PCC 0,253 dans les deux cas). Le plafond bas **n'est donc pas un artefact de formule** : c'est le plafond réel du GOP non-supervisé. C'est cohérent avec la littérature — les scores publiés à PCC 0,6+ (Azure, GOPT) proviennent de **modèles entraînés en supervisé** (régression sur les features GOP → scores humains), pas du GOP brut.
+
+### Verdict : **NO-GO** sur le scoring chiffré non-supervisé
+On ne peut afficher **ni un score de prononciation fiable, ni même un drapeau binaire « mot mal prononcé » honnête** avec le GOP brut. La latence excellente (0,093× CPU) ne rachète rien : le signal n'est pas corrélé au jugement humain. Ce résultat **ne renverse pas l'architecture — il la confirme** : la position « V1 = `ear-compare`, scoring = R&D non résolu » est désormais chiffrée.
+
+### Enseignement & porte de sortie
+- **Court terme :** rester sur `ear-compare` (comparaison qualitative à l'oreille / diff textuelle). Ne **pas** promettre de score chiffré « façon ELSA » — ce serait survendre.
+- **Piste R&D (hors MVP, non promise) :** un scorer **supervisé façon GOPT** (petit transformer entraîné sur SpeechOcean762 à partir des features GOP + alignement) pourrait viser PIVOT/GO. C'est un **vrai chantier ML d'entraînement**, à ouvrir seulement si le scoring devient un objectif produit prioritaire.
+- Implication ports (§ ARCHITECTURE) : `PronunciationScoringPort` reste sur `UnscoredComparison` ; pas de `ScoreResult` chiffré tant que la piste supervisée n'a pas été validée par un spike dédié.
+
+### Bilan des 3 spikes
+STT/TTS local **prouvés** (desktop #3 GO, web/WASM #1 GO partiel) · scoring chiffré **écarté à court terme** (#2 NO-GO). Le MVP verrouillé (Enregistrer → STT local → correction 1 niveau → diff cliquable, `ear-compare`) est **entièrement dé-risqué** ; aucune de ses briques ne dépend du scoring GOP.
