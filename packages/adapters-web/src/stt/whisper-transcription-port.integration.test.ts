@@ -103,4 +103,18 @@ describe('whisper transcription adapter honours the TranscriptionPort contract',
     expect(result.text).toBe('ok');
     expect(run).toHaveBeenCalledTimes(2);
   });
+
+  it('retries engine creation after the engine failed to initialize (e.g. session creation error)', async () => {
+    const factory: AsrEngineFactory = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Can't create a session"))
+      .mockResolvedValue({ engine: fakeEngine(), device: 'wasm' });
+    const port = createWhisperTranscriptionPort({ engineFactory: factory });
+
+    await expect(port.transcribe(pcmClip('clip-1'))).rejects.toThrow(/transcription failed/i);
+    const result = await port.transcribe(pcmClip('clip-1'));
+
+    expect(result.text).toBe('yesterday I deployed');
+    expect(factory).toHaveBeenCalledTimes(2);
+  });
 });

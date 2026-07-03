@@ -20,3 +20,10 @@ export const WEB_MODEL_REGISTRY: readonly WebModelEntry[] = [
 export function findModel(modelId: string): WebModelEntry | null {
   return WEB_MODEL_REGISTRY.find((entry) => entry.id === modelId) ?? null;
 }
+
+// `checksum` porte la révision épinglée sous la forme `hf:owner/repo@revision` —
+// extraite ici pour être réellement transmise à `pipeline()` (transformers.js).
+export function pinnedRevision(entry: WebModelEntry): string {
+  const [, revision] = entry.checksum.split('@');
+  return revision ?? 'main';
+}

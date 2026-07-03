@@ -29,7 +29,14 @@ export function createWhisperTranscriptionPort(options: WhisperPortOptions): Tra
   const memo = new Map<string, TranscriptionResult>();
 
   function ensureEngine(): Promise<{ engine: AsrEngine; device: AsrDevice }> {
-    enginePromise ??= options.engineFactory(options.onDownloadProgress);
+    if (enginePromise === null) {
+      // Une tentative ratée ne doit pas rester en cache : sinon un retry ré-utiliserait
+      // la même promesse rejetée pour toujours (aucune nouvelle tentative réelle).
+      enginePromise = options.engineFactory(options.onDownloadProgress).catch((error: unknown) => {
+        enginePromise = null;
+        throw error;
+      });
+    }
     return enginePromise;
   }
 
