@@ -56,7 +56,11 @@ importers:
 
   services/api: {}
 
-  tooling/eval: {}
+  tooling/eval:
+    dependencies:
+      '@loqua/core':
+        specifier: workspace:*
+        version: link:../../packages/core
 
 packages:
 
