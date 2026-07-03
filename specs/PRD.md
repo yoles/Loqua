@@ -1,7 +1,7 @@
 # PRD — App d'entraînement à l'anglais parlé pour développeurs
 
 > **Nom de travail :** *Loqua*
-> **En une phrase :** Tu parles anglais, l'app te renvoie une version native corrigée + expliquée, te fait travailler ta prononciation mot par mot, et transforme tes erreurs en un entraînement personnalisé qui te suit dans le temps.
+> **En une phrase :** L'utilisateur parle anglais, l'app lui renvoie une version native corrigée + expliquée, le fait travailler sa prononciation mot par mot, et transforme ses erreurs en un entraînement personnalisé qui le suit dans le temps.
 >
 > **Portée de ce document :** le *quoi* et le *pourquoi* (produit). Le *comment* (stack, ports, données, coûts, plan de validation) vit dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et [`../SPIKES.md`](SPIKES.md), seule source de vérité technique.
 
@@ -20,10 +20,10 @@ Les devs non-anglophones comprennent souvent bien l'anglais écrit, mais **bloqu
 Ces principes viennent directement du fait que « écouter une version parfaite » ne suffit pas à progresser :
 
 1. **Production active > écoute passive.** L'utilisateur produit d'abord, l'IA corrige ensuite.
-2. **Feedback sur SA voix.** Pas seulement « voici la bonne version », mais « voici où *ta* prononciation décroche ». *(Objectif : scoring phonème ; démarrage par une comparaison à l'oreille — cf. §5 et §8.)*
+2. **Feedback sur SA voix.** Pas seulement « voici la bonne version », mais « voici où *sa* prononciation décroche ». *(Objectif : scoring phonème ; démarrage par une comparaison à l'oreille — cf. §5 et §8.)*
 3. **Comprendre le pourquoi.** Chaque correction est catégorisée et expliquée en une phrase.
 4. **Correction graduée.** *Vision :* 3 niveaux (*minimal* / *naturel* / *natif + idiomatique*) au choix de l'utilisateur. *MVP :* un seul niveau (« naturel ») — les autres viendront s'ils sont réclamés (cf. §8).
-5. **Tes erreurs deviennent ton programme.** Répétition espacée (SRS) sur tes fautes récurrentes et tes mots difficiles. **C'est le vrai levier de progression et le différenciateur le plus défendable.**
+5. **Ses erreurs deviennent son programme.** Répétition espacée (SRS) sur ses fautes récurrentes et ses mots difficiles. **C'est le vrai levier de progression et le différenciateur le plus défendable.**
 6. **Habitude > intensité.** Sessions courtes, streak quotidien, friction minimale.
 
 ---
@@ -102,10 +102,10 @@ C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
 - 🔁 **Mode boucle** : répète le mot automatiquement toutes les *N* secondes (défaut 1,5 s, réglable), pour répéter en même temps derrière.
 - 🐢 **Vitesse réglable** : 0.5× / 0.75× / 1× (pour décomposer les mots durs).
 - 🔤 **Transcription phonétique (IPA)** + découpage syllabique : `interesting → /ˈɪn.trəs.tɪŋ/`.
-- 🎙️ **Enregistre-toi & compare** : tu répètes et tu confrontes ta prononciation à la référence.
-  - **V1 — comparaison à l'oreille** (aucun modèle de scoring) : tu écoutes, tu compares. **C'est la promesse tenue, le socle durable.**
+- 🎙️ **S'enregistrer & comparer** : l'utilisateur répète et confronte sa prononciation à la référence.
+  - **V1 — comparaison à l'oreille** (aucun modèle de scoring) : l'utilisateur écoute, compare. **C'est la promesse tenue, le socle durable.**
   - **Objectif lointain — scoring phonème chiffré** : l'app scorerait le mot son par son et surlignerait la syllabe ratée. Le spike de faisabilité a **tranché : le scoring local *non-supervisé* n'est pas fiable** (cf. [`../SPIKES.md`](SPIKES.md) §7) → **non livré**. Un score chiffré n'est envisageable que via un modèle **entraîné (supervisé)** : objectif R&D **non garanti**, à ne pas considérer comme acquis.
-- 👯 **Paires minimales** (ultérieur) : si tu rates un son récurrent (ex. `/ɪ/` vs `/iː/`), l'app te propose *ship / sheep*, *bit / beat*…
+- 👯 **Paires minimales** (ultérieur) : si l'utilisateur rate un son récurrent (ex. `/ɪ/` vs `/iː/`), l'app lui propose *ship / sheep*, *bit / beat*…
 
 > La comparaison rend la répétition consciente ; un scoring chiffré la rendrait mesurable — mais seulement s'il devient fiable en local (non acquis, cf. [`../SPIKES.md`](SPIKES.md) §7).
 
@@ -120,7 +120,7 @@ C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
 | **Niveaux / rangs** | Progression visible (ex. *Junior → Confirmé → Senior speaker*). |
 | **Badges** | « Premier standup décrit », « 100 mots maîtrisés », « 7 jours d'affilée », « Son /θ/ dompté ». |
 | **Tableau de progrès** | Courbe du taux d'erreur, minutes parlées, vocabulaire unique utilisé, scores de prononciation dans le temps. |
-| **Deck SRS personnel** | Tes fautes récurrentes + mots difficiles reviennent au bon moment (répétition espacée). **La feature la plus forte pour progresser.** |
+| **Deck SRS personnel** | Les fautes récurrentes de l'utilisateur + ses mots difficiles reviennent au bon moment (répétition espacée). **La feature la plus forte pour progresser.** |
 | **Défis « scénario »** | Prompts contextualisés dev : *décris un bug*, *fais une code review orale*, *explique une décision d'archi*, *raconte un post-mortem d'incident*, *réponds en interview technique*. |
 | **Mode Shadowing** (ultérieur) | Parler *en même temps* que l'audio de référence pour caler rythme et intonation. |
 
@@ -162,10 +162,10 @@ Bénéfice induit : le traitement local a un **coût récurrent quasi nul**, là
 `Enregistrer → STT local → correction 1 niveau (« naturel », en-US) → vue diff cliquable`, persistance locale. *But : la correction async apporte-t-elle une valeur que ChatGPT ne donne pas ?* Rien d'autre.
 
 **Itération 2 — le fossé : faire progresser**
-Deck **SRS** de tes fautes (local, déterministe, gratuit — absent des concurrents conversationnels) · streak + XP.
+Deck **SRS** des fautes de l'utilisateur (local, déterministe, gratuit — absent des concurrents conversationnels) · streak + XP.
 
 **Itération 3 — la prononciation**
-TTS local · tap-sur-mot + boucle/vitesse · « enregistre-toi & compare à l'oreille ».
+TTS local · tap-sur-mot + boucle/vitesse · « s'enregistrer & comparer à l'oreille ».
 
 **Scoring phonème chiffré — statut : R&D non garantie (hors chemin critique)**
 Le spike de faisabilité a été fait : le GOP **local non-supervisé n'est pas fiable** (cf. [`../SPIKES.md`](SPIKES.md) §7). Décision : **on reste sur la comparaison à l'oreille** et on ne survend pas la promesse. Un score chiffré n'est rouvrable que via un modèle **entraîné (supervisé)** — piste R&D lourde, non planifiée, à n'engager que si le scoring devient prioritaire.

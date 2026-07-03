@@ -1,7 +1,7 @@
 # Architecture Loqua — Direction de référence
 
 > **Nature :** document d'architecture **ferme**. Ce sont des décisions arrêtées, pas des options.
-> **Destinataire :** l'agent d'implémentation (Claude Fable 5) et tout contributeur. Ce document est la source de vérité ; en cas de doute, il prime sur l'intuition.
+> **Destinataire :** l'agent d'implémentation (assistant IA) et tout contributeur. Ce document est la source de vérité ; en cas de doute, il prime sur l'intuition.
 > **Sources :** `PRD.md` (v2), `ANALYSE_CRITIQUE_PRD.md`, `ARCHITECTURE_brouillon.md`.
 > **Date :** 2026-07-02
 
