@@ -1,3 +1,8 @@
+export { createCloudCorrectionPort } from './correction/cloud-correction-port.ts';
+export {
+  correctionPayloadSchema,
+  type CorrectionPayload,
+} from './correction/correction-schema.ts';
 export { WEB_MODEL_REGISTRY, findModel, type WebModelEntry } from './models/registry.ts';
 export { createWebModelRuntime, type ModelLoader } from './models/web-model-runtime.ts';
 export type {

@@ -1,0 +1,5 @@
+# Backend fin Loqua — dev local : `pnpm --filter @loqua/api dev` (aucun compte requis).
+# Secrets : services/api/.dev.vars (gitignoré) — ANTHROPIC_API_KEY=sk-ant-…
+name = "loqua-api"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
