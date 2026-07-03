@@ -38,15 +38,13 @@ import {
   createTransformersAsrEngineFactory,
   createWhisperTranscriptionPort,
 } from '@loqua/adapters-web';
-import type { Sqlite3InitModule } from '@loqua/adapters-web/sqlite';
-
 import type { SessionRecord } from '@/entities/session/record';
 
 const CORRECTION_ENDPOINT =
   process.env['NEXT_PUBLIC_CORRECTION_API'] ?? 'http://localhost:8787/v1/correction';
-// Servi en statique (scripts/copy-sqlite-wasm.mjs) et importé NATIVEMENT au
-// runtime : le worker OPFS interne de sqlite-wasm ne passe pas par le bundler.
-const SQLITE_RUNTIME_URL = '/sqlite-wasm/index.mjs';
+// Worker statique (public/) : SQLite y vit car OPFS est interdit sur le thread
+// principal ; la dist sqlite-wasm est copiée à côté par copy-sqlite-wasm.mjs.
+const SQLITE_WORKER_URL = '/sqlite-worker.mjs';
 
 const systemClock: ClockPort = {
   now: () => Date.now(),
@@ -134,16 +132,15 @@ function useCorrectionAppInternal(): CorrectionApp {
     const detachers: (() => void)[] = [];
     (async () => {
       try {
-        const { openSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
-        const runtime = (await import(/* turbopackIgnore: true */ SQLITE_RUNTIME_URL)) as {
-          default: Sqlite3InitModule;
-        };
-        const db = await openSqliteDatabase(runtime.default);
+        const { openWorkerSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
+        const db = await openWorkerSqliteDatabase(
+          new Worker(SQLITE_WORKER_URL, { type: 'module' }),
+        );
         if (cancelled) {
           db.close();
           return;
         }
-        const storage = createSqliteStoragePort(db.executor);
+        const storage = await createSqliteStoragePort(db.executor);
         storageRef.current = storage;
         setStoragePersistent(db.persistent);
 

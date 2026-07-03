@@ -5,7 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./sqlite": "./src/storage/opfs-database.ts"
+    "./sqlite": "./src/storage/worker-sqlite.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

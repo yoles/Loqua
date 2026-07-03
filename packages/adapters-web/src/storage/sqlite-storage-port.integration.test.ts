@@ -6,15 +6,16 @@ import type { SqliteExecutor, SqliteRow } from './sqlite-executor.ts';
 import type { StoragePort } from '@loqua/core';
 
 // Le contrat du port se vérifie sur une VRAIE base SQLite (node:sqlite en test,
-// sqlite-wasm/OPFS en prod) — même SQL via la couture SqliteExecutor.
+// worker sqlite-wasm/OPFS en prod) — même SQL via la couture SqliteExecutor.
 function nodeSqliteExecutor(db: DatabaseSync): SqliteExecutor {
   return {
     run(sql, params = []) {
       db.prepare(sql).run(...params);
+      return Promise.resolve();
     },
     all(sql, params = []) {
       const rows: SqliteRow[] = db.prepare(sql).all(...params);
-      return rows;
+      return Promise.resolve(rows);
     },
   };
 }
@@ -29,9 +30,9 @@ describe('SQLite storage adapter honours the StoragePort contract', () => {
   let db: DatabaseSync;
   let storage: StoragePort;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DatabaseSync(':memory:');
-    storage = createSqliteStoragePort(nodeSqliteExecutor(db));
+    storage = await createSqliteStoragePort(nodeSqliteExecutor(db));
   });
 
   afterEach(() => {
@@ -104,7 +105,7 @@ describe('SQLite storage adapter honours the StoragePort contract', () => {
   it('survives a reopen on the same database (schema is idempotent)', async () => {
     await storage.put('sessions', 's1', { transcript: 'kept' });
 
-    const reopened = createSqliteStoragePort(nodeSqliteExecutor(db));
+    const reopened = await createSqliteStoragePort(nodeSqliteExecutor(db));
 
     expect(await reopened.read('sessions', 's1')).toEqual({ transcript: 'kept' });
   });
