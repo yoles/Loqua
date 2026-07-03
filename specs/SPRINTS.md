@@ -53,7 +53,7 @@
 
 ---
 
-## Sprint 2 — MVP : la boucle de correction (Étape 2) · *le produit existe à la fin* — lots 2.1→2.7 ✅ FAITS (2026-07-03) · **🛑 EN ATTENTE DU CHECKPOINT 2.8**
+## Sprint 2 — MVP : la boucle de correction (Étape 2) · *le produit existe à la fin* — ✅ FAIT, checkpoint 2.8 validé (2026-07-03)
 
 > **Écarts/décisions notés :**
 > - **2.4 Done partiel** : implémenté et testé fournisseur **mocké** (10 tests) ; l'appel réel Claude (« une phrase fautive → JSON valide ») se valide **au checkpoint 2.8** avec la clé — un seul arrêt au lieu de deux.
@@ -62,6 +62,9 @@
 > - **Audio non persisté** dans le MVP (les blobs micro restent en mémoire de session) — le stockage fichiers OPFS des clips arrive avec la practice (Sprint 5) ; le diff/l'historique n'en ont pas besoin.
 > - **Tests UI** : la logique d'affichage est extraite en view-model **pur** testé en Node (pas de jsdom/testing-library à ce stade) ; les scénarios navigateur réels (micro, OPFS, WebGPU) se valident au checkpoint.
 > - Le runner du pipeline (effets/retry) vit dans `core/pipeline/runner.ts`, testé avec ports factices (7 tests).
+> - **Checkpoint 2.8 (2026-07-03)** : 3 bugs STT trouvés/corrigés au micro réel — (1) passe d'optimisation ORT `TransposeDQWeightsForMatMulNBits` cassée sur l'export `whisper-base.en` → `graphOptimizationLevel: 'disabled'` ; (2) `language` rejeté par le modèle mono-langue `.en` → omis ; (3) timestamps par mot impossibles (export sans cross-attentions) → **retirés du MVP, `words` vide ; timings mot à mot à re-résoudre au Sprint 5** (export avec attentions ou autre modèle). Note : `@huggingface/transformers` dépend en dur d'un build nightly d'`onnxruntime-web` (toutes versions) — bug amont possible, surveiller.
+> - **Baseline eval réelle commitée** : 43/60, juge 4,00/5, 0 sortie Zod invalide. Points faibles : syntax 25 %, idiom 38 % — candidats d'itération prompt post-Sprint 3 (jamais sans re-passer l'eval).
+> - Comportement validé : sans opt-in cloud, `egressGuard` refuse (`no-consent`) avec message UI + proposition d'opt-in — conforme invariants #2/#5 (le web n'a pas de LLM local ; le 100 % local arrive au Sprint 4).
 
 `Enregistrer → STT local → correction 1 niveau (« naturel », en-US) → diff cliquable`, persistance locale. Rien d'autre (§18).
 
