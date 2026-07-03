@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { createEventBus, makeCorrection } from '../index.ts';
 import { createPipelineRunner } from './runner.ts';
 import type {
   AudioClip,
   CorrectionPort,
   CorrectionResult,
+  DomainEvent,
   TranscriptionPort,
   TranscriptionResult,
 } from '../index.ts';
@@ -187,6 +189,75 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     runner.abort();
 
     expect(runner.state().phase).toBe('IDLE');
+  });
+
+  it('publishes one ErrorDetected per correction when reaching READY', async () => {
+    const bus = createEventBus();
+    const detected: DomainEvent[] = [];
+    bus.subscribe('ErrorDetected', (event) => {
+      detected.push(event);
+    });
+    const withErrors: CorrectionResult = {
+      ...correction,
+      corrections: [
+        makeCorrection({
+          original: 'I have make',
+          fixed: 'I made',
+          type: 'tense',
+          explanation: 'past simple',
+        }),
+        makeCorrection({
+          original: 'a deploy',
+          fixed: 'a deployment',
+          type: 'vocabulary',
+          explanation: 'noun form',
+        }),
+      ],
+    };
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct: vi.fn().mockResolvedValue(withErrors) }),
+      variant: 'en-US',
+      onState: () => {},
+      events: bus,
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(detected).toEqual([
+      {
+        kind: 'ErrorDetected',
+        type: 'tense',
+        value: { original: 'I have make', fixed: 'I made' },
+      },
+      {
+        kind: 'ErrorDetected',
+        type: 'vocabulary',
+        value: { original: 'a deploy', fixed: 'a deployment' },
+      },
+    ]);
+  });
+
+  it('publishes nothing on failure and works without a bus', async () => {
+    const bus = createEventBus();
+    const detected: DomainEvent[] = [];
+    bus.subscribe('ErrorDetected', (event) => {
+      detected.push(event);
+    });
+    const failing = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct: vi.fn().mockRejectedValue(new Error('down')) }),
+      variant: 'en-US',
+      onState: () => {},
+      events: bus,
+    });
+
+    failing.startRecording();
+    await failing.finishRecording(clip);
+
+    expect(failing.state().phase).toBe('FAILED_LLM');
+    expect(detected).toEqual([]);
   });
 
   it('notifies READY with the session outcome for persistence', async () => {

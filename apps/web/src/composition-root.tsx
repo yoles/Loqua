@@ -6,11 +6,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  attachErrorCardCreation,
   createEgressGuard,
   createEventBus,
   createPipelineRunner,
   makeConsent,
   INITIAL_PIPELINE_STATE,
+  type ClockPort,
   type PipelineRunner,
   type PipelineState,
   type ReadySession,
@@ -31,6 +33,11 @@ const CORRECTION_ENDPOINT =
 // Servi en statique (scripts/copy-sqlite-wasm.mjs) et importé NATIVEMENT au
 // runtime : le worker OPFS interne de sqlite-wasm ne passe pas par le bundler.
 const SQLITE_RUNTIME_URL = '/sqlite-wasm/index.mjs';
+
+const systemClock: ClockPort = {
+  now: () => Date.now(),
+  timezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+};
 
 export interface CorrectionApp {
   readonly state: PipelineState;
@@ -81,6 +88,7 @@ export function useCorrectionApp(): CorrectionApp {
       onReady: (session: ReadySession) => {
         void persistSession(session);
       },
+      events: bus,
     });
 
     async function persistSession(session: ReadySession): Promise<void> {
@@ -103,6 +111,7 @@ export function useCorrectionApp(): CorrectionApp {
   // Stockage : sqlite-wasm chargé hors bundler, OPFS si dispo — état TOUJOURS visible.
   useEffect(() => {
     let cancelled = false;
+    let detachErrorCards: (() => void) | null = null;
     (async () => {
       try {
         const { openSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
@@ -116,6 +125,10 @@ export function useCorrectionApp(): CorrectionApp {
         }
         storageRef.current = createSqliteStoragePort(db.executor);
         setStoragePersistent(db.persistent);
+        detachErrorCards = attachErrorCardCreation(app.bus, {
+          storage: storageRef.current,
+          clock: systemClock,
+        }).detach;
         const stored = await storageRef.current.query<SessionRecord>('sessions', {});
         if (!cancelled) {
           setSessions([...stored].sort((a, b) => b.createdAtMs - a.createdAtMs));
@@ -128,8 +141,9 @@ export function useCorrectionApp(): CorrectionApp {
     })();
     return () => {
       cancelled = true;
+      detachErrorCards?.();
     };
-  }, []);
+  }, [app.bus]);
 
   const eraseAll = useCallback(async () => {
     await storageRef.current?.eraseAll();

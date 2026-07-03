@@ -1,7 +1,8 @@
 import { INITIAL_PIPELINE_STATE, transition } from './pipeline.ts';
 import type { PipelineEvent, PipelineState } from './pipeline.ts';
+import type { EventBus } from '../events/event-bus.ts';
 import type { AudioClip } from '../ports/audio-clip.ts';
-import type { CorrectionPort } from '../ports/correction-port.ts';
+import type { CorrectionPort, CorrectionResult } from '../ports/correction-port.ts';
 import type { TranscriptionPort } from '../ports/transcription-port.ts';
 import type { Variant } from '../shared/variant.ts';
 
@@ -23,6 +24,7 @@ export interface PipelineRunnerDeps {
   readonly variant: Variant;
   readonly onState: (state: PipelineState) => void;
   readonly onReady?: (session: ReadySession) => void;
+  readonly events?: EventBus;
 }
 
 export interface PipelineRunner {
@@ -35,6 +37,19 @@ export interface PipelineRunner {
 
 function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function publishDetectedErrors(events: EventBus | undefined, correction: CorrectionResult): void {
+  if (events === undefined) {
+    return;
+  }
+  for (const detected of correction.corrections) {
+    events.publish({
+      kind: 'ErrorDetected',
+      type: detected.type,
+      value: { original: detected.original, fixed: detected.fixed },
+    });
+  }
 }
 
 export function createPipelineRunner(deps: PipelineRunnerDeps): PipelineRunner {
@@ -74,6 +89,7 @@ export function createPipelineRunner(deps: PipelineRunnerDeps): PipelineRunner {
       dispatch({ type: 'DiffDisplayed' }); // READY = le diff est affichable
       const current = ((): PipelineState => state)(); // dispatch a muté l'état fermé
       if (current.phase === 'READY') {
+        publishDetectedErrors(deps.events, current.correction);
         deps.onReady?.({
           clipId: current.clipId,
           transcription: current.transcription,

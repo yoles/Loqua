@@ -43,6 +43,12 @@ export {
   SCHEDULING_RULES,
   type Scheduling,
 } from './contexts/srs/scheduling.ts';
+export {
+  attachErrorCardCreation,
+  CARDS_COLLECTION,
+  type ErrorCardPolicy,
+  type ErrorCardPolicyDeps,
+} from './contexts/srs/error-card-policy.ts';
 
 // events
 export type { DomainEvent, EventKind, EventOfKind } from './events/domain-events.ts';
