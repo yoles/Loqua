@@ -49,6 +49,16 @@ export { addXp, makeXp, type Xp } from './contexts/gamification/xp.ts';
 export { makeConsent, type Consent } from './contexts/identity/consent.ts';
 export { IdentityError } from './contexts/identity/errors.ts';
 
+// egress (point de sortie unique du contenu)
+export {
+  createEgressGuard,
+  type EgressDecision,
+  type EgressGuard,
+  type EgressPayload,
+  type EgressRefusalReason,
+  type EgressRequest,
+} from './egress/egress-guard.ts';
+
 // pipeline
 export { PipelineError } from './pipeline/errors.ts';
 export {
