@@ -30,7 +30,14 @@
 
 ---
 
-## Sprint 1 — Fondations (Étape 1) · *rien de visible à l'écran, c'est voulu*
+## Sprint 1 — Fondations (Étape 1) · *rien de visible à l'écran, c'est voulu* — ✅ FAIT (2026-07-03)
+
+> **Écarts/décisions notés en fin de sprint :**
+> - `apps/web` créé en **stub** (typecheck strict) — Next.js sera installé au lot 2.6 avec l'UI, conformément à « installer dans le package concerné, quand nécessaire ».
+> - Tests d'intégration du StoragePort sur **`node:sqlite`** (vraie base) via la couture `SqliteExecutor` ; le binding **sqlite-wasm/OPFS** (mince) sera validé en app au lot 2.7. Règle dep-cruiser ajoutée : le code prod d'`adapters-web` ne touche jamais `node:*`.
+> - Interprétation actée de la règle paquets en run planifié : les paquets **nommés dans ARCHITECTURE §17/SPRINTS sont pré-approuvés** ; tout paquet hors liste = arrêt et demande.
+> - **Docker/compose : non pertinent à ce stade** (dev natif Next/Tauri/modèles locaux ; Tauri exige le GUI hôte). À reconsidérer uniquement pour le déploiement de `services/api`.
+> - Garde-fou prouvé : import interdit dans `core` → build cassé (`core-n-importe-personne`), retiré après preuve.
 
 | Lot | Livrable | Done quand |
 |---|---|---|
