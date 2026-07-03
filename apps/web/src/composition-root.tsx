@@ -2,8 +2,17 @@
 
 // COMPOSITION ROOT de l'app web (ARCHITECTURE §5, §20) : le SEUL endroit qui
 // instancie les adapters et les injecte dans le core. Aucune feature n'importe
-// un adapter directement.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// un adapter directement ; tout consommateur passe par le Provider.
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 
 import {
   attachErrorCardCreation,
@@ -11,12 +20,16 @@ import {
   createEgressGuard,
   createEventBus,
   createPipelineRunner,
+  createReviewDeck,
   makeConsent,
+  GAMIFICATION_COLLECTION,
   INITIAL_PIPELINE_STATE,
   type ClockPort,
+  type GamificationState,
   type PipelineRunner,
   type PipelineState,
   type ReadySession,
+  type ReviewDeck,
   type StoragePort,
 } from '@loqua/core';
 import {
@@ -49,18 +62,24 @@ export interface CorrectionApp {
   readonly cloudCorrection: boolean;
   readonly sessions: readonly SessionRecord[];
   readonly storagePersistent: boolean | null; // null = stockage indisponible
+  readonly review: ReviewDeck | null; // null tant que le stockage n'est pas prêt
+  readonly cardsVersion: number; // s'incrémente quand le deck a pu changer
+  readonly gamification: GamificationState | null;
   grantMicrophone(): void;
   setCloudCorrection(enabled: boolean): void;
   eraseAll(): Promise<void>;
 }
 
-export function useCorrectionApp(): CorrectionApp {
+function useCorrectionAppInternal(): CorrectionApp {
   const [state, setState] = useState<PipelineState>(INITIAL_PIPELINE_STATE);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
   const [microphoneConsent, setMicrophoneConsent] = useState(false);
   const [cloudCorrection, setCloudCorrectionState] = useState(false);
   const [sessions, setSessions] = useState<readonly SessionRecord[]>([]);
   const [storagePersistent, setStoragePersistent] = useState<boolean | null>(null);
+  const [review, setReview] = useState<ReviewDeck | null>(null);
+  const [cardsVersion, setCardsVersion] = useState(0);
+  const [gamification, setGamification] = useState<GamificationState | null>(null);
   const cloudOptInRef = useRef(false);
   const storageRef = useRef<StoragePort | null>(null);
 
@@ -112,8 +131,7 @@ export function useCorrectionApp(): CorrectionApp {
   // Stockage : sqlite-wasm chargé hors bundler, OPFS si dispo — état TOUJOURS visible.
   useEffect(() => {
     let cancelled = false;
-    let detachErrorCards: (() => void) | null = null;
-    let detachGamification: (() => void) | null = null;
+    const detachers: (() => void)[] = [];
     (async () => {
       try {
         const { openSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
@@ -125,17 +143,36 @@ export function useCorrectionApp(): CorrectionApp {
           db.close();
           return;
         }
-        storageRef.current = createSqliteStoragePort(db.executor);
+        const storage = createSqliteStoragePort(db.executor);
+        storageRef.current = storage;
         setStoragePersistent(db.persistent);
-        detachErrorCards = attachErrorCardCreation(app.bus, {
-          storage: storageRef.current,
-          clock: systemClock,
-        }).detach;
-        detachGamification = attachGamification(app.bus, {
-          storage: storageRef.current,
-          clock: systemClock,
-        }).detach;
-        const stored = await storageRef.current.query<SessionRecord>('sessions', {});
+
+        const errorCards = attachErrorCardCreation(app.bus, { storage, clock: systemClock });
+        const gamificationPolicy = attachGamification(app.bus, { storage, clock: systemClock });
+        detachers.push(errorCards.detach, gamificationPolicy.detach);
+        setReview(createReviewDeck({ storage, clock: systemClock, events: app.bus }));
+
+        const reloadGamification = async (): Promise<void> => {
+          await gamificationPolicy.settled();
+          const state = await storage.read<GamificationState>(GAMIFICATION_COLLECTION, 'state');
+          if (!cancelled) {
+            setGamification(state);
+          }
+        };
+        const reloadCards = async (): Promise<void> => {
+          await errorCards.settled();
+          if (!cancelled) {
+            setCardsVersion((version) => version + 1);
+          }
+        };
+        detachers.push(
+          app.bus.subscribe('ErrorDetected', () => void reloadCards()),
+          app.bus.subscribe('SessionCompleted', () => void reloadGamification()),
+          app.bus.subscribe('CardReviewed', () => void reloadGamification()),
+        );
+        void reloadGamification();
+
+        const stored = await storage.query<SessionRecord>('sessions', {});
         if (!cancelled) {
           setSessions([...stored].sort((a, b) => b.createdAtMs - a.createdAtMs));
         }
@@ -147,14 +184,17 @@ export function useCorrectionApp(): CorrectionApp {
     })();
     return () => {
       cancelled = true;
-      detachErrorCards?.();
-      detachGamification?.();
+      for (const detach of detachers) {
+        detach();
+      }
     };
   }, [app.bus]);
 
   const eraseAll = useCallback(async () => {
     await storageRef.current?.eraseAll();
     setSessions([]);
+    setGamification(null);
+    setCardsVersion((version) => version + 1);
   }, []);
 
   const publishConsent = useCallback(
@@ -190,8 +230,27 @@ export function useCorrectionApp(): CorrectionApp {
     cloudCorrection,
     sessions,
     storagePersistent,
+    review,
+    cardsVersion,
+    gamification,
     grantMicrophone,
     setCloudCorrection,
     eraseAll,
   };
+}
+
+const CorrectionAppContext = createContext<CorrectionApp | null>(null);
+
+export function CorrectionAppProvider({ children }: { children: ReactNode }) {
+  const app = useCorrectionAppInternal();
+  return <CorrectionAppContext.Provider value={app}>{children}</CorrectionAppContext.Provider>;
+}
+CorrectionAppProvider.displayName = 'CorrectionAppProvider';
+
+export function useCorrectionApp(): CorrectionApp {
+  const app = useContext(CorrectionAppContext);
+  if (app === null) {
+    throw new Error('useCorrectionApp must be used inside CorrectionAppProvider');
+  }
+  return app;
 }

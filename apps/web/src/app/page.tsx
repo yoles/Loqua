@@ -1,4 +1,4 @@
-import { CorrectionSession } from '@/widgets/correction-session/CorrectionSession';
+import { AppShell } from '@/widgets/app-shell/AppShell';
 
 export default function HomePage() {
   return (
@@ -8,7 +8,7 @@ export default function HomePage() {
         Parle anglais, reçois une version naturelle expliquée. Ta voix ne quitte jamais cette
         machine.
       </p>
-      <CorrectionSession />
+      <AppShell />
     </main>
   );
 }
