@@ -10,6 +10,14 @@ module.exports = {
       to: { pathNot: '^packages/core/src' },
     },
     {
+      name: 'adapters-web-navigateur-pur',
+      severity: 'error',
+      comment:
+        'Le code de prod des adapters web ne touche jamais une API Node (node:sqlite = tests uniquement)',
+      from: { path: '^packages/adapters-web/src', pathNot: '\\.test\\.ts$' },
+      to: { path: '^node:' },
+    },
+    {
       name: 'ui-web-sans-adapter',
       severity: 'error',
       comment: "ui-web n'importe jamais un adapter (l'injection se fait au composition root)",
