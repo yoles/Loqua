@@ -1,0 +1,114 @@
+# Loqua — Plan de sprints (guide d'exécution)
+
+> **Rôle :** le sommaire opérationnel pour réaliser le projet **en une traite**, lot par lot. Chaque lot = un livrable + ses tests + **un commit**. Dérivé de [`ARCHITECTURE.md`](ARCHITECTURE.md) §18-19 (qui reste la source de vérité technique — en cas de doute, c'est elle qui tranche).
+> **Ordre impératif :** on ne commence pas un sprint tant que le précédent n'est pas « Done ». À l'intérieur d'un sprint, l'ordre des lots est aussi l'ordre d'exécution.
+
+---
+
+## Règles transverses (valables sur tous les lots)
+
+1. **Un lot = un commit** (message court, en français, style `feat:`/`chore:`/`test:`/`docs:` — **jamais de mention de Claude/Claude Code**, pas de Co-Authored-By).
+2. **Port avant adapter** : toute brique commence par son interface dans `core/ports` (§20).
+3. **Le `core` n'importe personne** — dependency-cruiser doit casser le build sinon.
+4. **Pas de `Date.now()`/`Math.random()` dans le core** → `ClockPort` / source injectée.
+5. **Toute sortie LLM validée par Zod** avant d'entrer dans le core ; JSON malformé géré explicitement.
+6. **Un seul point de sortie réseau pour le contenu** : `egressGuard`. Aucun `fetch` de contenu ailleurs.
+7. **Tests par régime** (§16) : TDD/BDD (Vitest) sur le déterministe · eval harness sur l'IA. Un lot sans son test n'est pas « Done ».
+8. **Conflit avec un invariant (§1)** → s'arrêter et remonter, ne pas contourner.
+9. **⚠️ = point de décision utilisateur** : s'arrêter et demander avant de continuer.
+
+---
+
+## Sprint 0 — Spikes de dé-risquage ✅ FAIT
+
+| # | Spike | Verdict |
+|---|---|---|
+| 0.1 | Inférence navigateur (STT/TTS/LLM) | **GO partiel** — web = lite, 100 % local = desktop ([SPIKES §5](SPIKES.md)) |
+| 0.2 | Scoring GOP local | **NO-GO** non-supervisé — `ear-compare` durable ([SPIKES §7](SPIKES.md)) |
+| 0.3 | Tauri + whisper.cpp natif | **GO** — pattern adapters validé, RTF 0,151× ([SPIKES §6](SPIKES.md)) |
+
+---
+
+## Sprint 1 — Fondations (Étape 1) · *rien de visible à l'écran, c'est voulu*
+
+| Lot | Livrable | Done quand |
+|---|---|---|
+| **1.1 Scaffold monorepo** | pnpm + Turborepo ; packages `core`, `apps/web`, `services/api`, `tooling/eval`, `ui-web` ; TS strict partout (`core` : `lib: ["ES2022"]`, zéro lib DOM/Node) ; Vitest branché. | `pnpm install && pnpm build && pnpm test` passent (tests vides OK). |
+| **1.2 Garde-fou d'archi** | dependency-cruiser : règle « `core` n'importe aucun package externe ni aucune app », branchée dans le build. | Un import interdit ajouté à la main dans `core` **casse** `pnpm lint:deps`. Retirer l'import après la preuve. |
+| **1.3 Le langage du domaine** | Value objects des 5 contexts (§7-9) : `Word`, `Phoneme`, `IPA`, `Correction`, `CorrectionCategory`, `UnscoredComparison`, `Card`, `Streak`… Immuables, TDD. | Tests unitaires verts ; aucun VO ne dépend d'un framework. |
+| **1.4 Les contrats (ports)** | Interfaces §9 : `TranscriptionPort`, `CorrectionPort`, `SpeechSynthesisPort`, `PronunciationScoringPort` (→ `UnscoredComparison` par défaut), `StoragePort`, `ModelRuntimePort`, `ClockPort`. Signatures TS = copie conforme de §9. | Compile ; revue croisée signature ↔ §9. |
+| **1.5 Event bus** | Bus d'événements typé du core (pub/sub synchrone simple) pour la comm inter-contexts (`ErrorDetected`, etc.). TDD. | Tests verts (émission, abonnement, ordre). |
+| **1.6 Première implémentation réelle** | `StoragePort` + adapter `@sqlite.org/sqlite-wasm` sur OPFS (web) + migrations + `eraseAll()` (invariant effacement §13). | Test d'intégration : write/read/erase via le port ; le core ne connaît pas SQLite. |
+| **1.7 Squelette eval** | `/tooling/eval` : structure golden-set + runner + format d'assertion sémantique (vide de contenu pour l'instant, §16). | Le runner tourne sur un cas bidon. |
+
+**Done Sprint 1 :** build+tests verts, garde-fou prouvé, un port implémenté de bout en bout.
+
+---
+
+## Sprint 2 — MVP : la boucle de correction (Étape 2) · *le produit existe à la fin*
+
+`Enregistrer → STT local → correction 1 niveau (« naturel », en-US) → diff cliquable`, persistance locale. Rien d'autre (§18).
+
+| Lot | Livrable | Done quand |
+|---|---|---|
+| **2.1 Machine à états du pipeline** | Reducer TS pur dans le core (§6) : `IDLE → RECORDING → TRANSCRIBING → CORRECTING → READY` + erreurs/annulation. TDD exhaustif. | Toutes les transitions testées, y compris les invalides. |
+| **2.2 `egressGuard`** | La fonction unique qui autorise (ou non) la sortie de **texte** : consentement + opt-in + capacité adapter (§15). L'audio n'est **jamais** autorisé. TDD + scénarios BDD. | Tests verts, dont « audio → refus inconditionnel ». |
+| **2.3 STT local (web)** | Adapter `TranscriptionPort` : `@huggingface/transformers` (Whisper), WebGPU si dispo → fallback WASM (acquis Spike #1). Download modèle à la 1ʳᵉ utilisation via `ModelRuntimePort` (§11 : progressif, checksum). | Un WAV de test est transcrit dans le navigateur ; l'audio ne quitte pas la machine. |
+| **2.4 Backend fin + correction cloud-ZDR** | `services/api` (Hono) : endpoint proxy LLM **ZDR, texte seul**. Adapter `CorrectionPort` web qui passe par `egressGuard`, sortie validée Zod (schéma §9), gestion JSON malformé. ⚠️ **Demander à l'utilisateur : fournisseur LLM + clé API.** | Une phrase fautive → JSON de corrections catégorisées + explications valide. |
+| **2.5 Eval de la correction** | Golden set 50-100 énoncés « dev » (standup, code review, incident) + assertions sémantiques + LLM-juge (§16). Obligatoire **avant** d'itérer sur le prompt. | `pnpm eval` sort un score ; baseline enregistrée. |
+| **2.6 UI : enregistrer → diff** | Next.js (App Router) + FSD : page d'enregistrement micro (consentement §15), états du pipeline visibles, **vue diff original↔corrigé cliquable** (chaque correction ouvre catégorie + explication). | Boucle complète au clavier/micro en local ; diff lisible et cliquable. |
+| **2.7 Persistance des sessions** | Sessions + corrections sauvées via `StoragePort` ; historique listable ; composition root de l'app web assemble tous les adapters (DI, §20). | Refresh navigateur → l'historique est là. `eraseAll()` accessible dans l'UI (réglages). |
+
+**Done Sprint 2 = MVP :** la question du PRD (« la correction async apporte-t-elle une valeur que ChatGPT ne donne pas ? ») est testable en vrai, sur ta machine.
+
+---
+
+## Sprint 3 — Le fossé : SRS + rétention (Étape 3)
+
+| Lot | Livrable | Done quand |
+|---|---|---|
+| **3.1 Moteur SRS** | Context SRS dans le core : algorithme FSRS (ou SM-2 si FSRS trop lourd — trancher au moment venu et le noter), `ClockPort` injecté, **100 % testé**. | Suite TDD complète : intervalles, oublis, réinsertion. |
+| **3.2 Erreurs → cartes** | Event `ErrorDetected` (émis en 2.4) → création de `Card` (copie de valeur : survit à la suppression de la session, §13). | Test d'intégration event bus → SRS ; suppression de session ne casse pas les cartes. |
+| **3.3 Streak + XP** | Context gamification : règle du streak en **scénarios Gherkin** (fuseau, bascule de jour, ≥ 1 min parlée), XP par session/mot. | Scénarios BDD verts. |
+| **3.4 UI review** | Écran deck du jour (cartes dues) + widget streak/XP sur l'accueil. | Une session de review complète fonctionne offline. |
+
+**Done Sprint 3 :** tes fautes d'hier reviennent te chercher aujourd'hui. C'est le différenciateur.
+
+---
+
+## Sprint 4 — Desktop : le 100 % local devient réel (Étape 4)
+
+| Lot | Livrable | Done quand |
+|---|---|---|
+| **4.1 Coquille Tauri** | `/apps/desktop` (Tauri 2) réutilisant le frontend web tel quel (acquis Spike #3). SQLite natif (SQLCipher) derrière le même `StoragePort`. | L'app desktop affiche l'UI du Sprint 2-3 avec persistance native. |
+| **4.2 STT natif** | `/adapters-tauri` : `TranscriptionPort` → whisper.cpp (whisper-rs), audio passé **par chemin de fichier**, IPC validé (§15). | Transcription native dans l'app ; RTF ≈ 0,15× confirmé. |
+| **4.3 LLM local** | Adapter `CorrectionPort` → llama.cpp en sidecar. ⚠️ **Demander à l'utilisateur : modèle retenu** (taille vs qualité, sa machine = RTX 3050 8 Go). Passer l'eval 2.5 : si la qualité locale est trop en retrait, le **documenter** et garder le choix local/cloud visible. | La correction tourne sans réseau ; score eval enregistré et comparé au cloud. |
+| **4.4 Composition root desktop** | DI desktop : tout local par défaut (invariant : cloud = opt-in explicite même ici). | **Débrancher le réseau → la boucle complète fonctionne.** C'est le test du positionnement. |
+
+**Done Sprint 4 :** la promesse du PRD (« la voix ne quitte pas la machine, et même le texte peut ne pas sortir ») est démontrable.
+
+---
+
+## Sprint 5 — Prononciation (Étape 5)
+
+| Lot | Livrable | Done quand |
+|---|---|---|
+| **5.1 TTS local** | `SpeechSynthesisPort` : kokoro.js (web) + Kokoro natif (desktop). La version corrigée est lue à voix haute. | Latence ≤ 2 s/phrase (acquis Spike #1). |
+| **5.2 Tap-sur-mot** | Panneau mot : lecture isolée, mode boucle (N s réglable), vitesse 0,5×/0,75×/1×, IPA + syllabes (PRD §5). | Le flux « je bute sur *interesting* → je boucle dessus » marche. |
+| **5.3 Enregistre-toi & compare** | `ear-compare` via `PronunciationScoringPort` → `UnscoredComparison` : lecture A/B référence/toi, waveform simple. **Pas de score chiffré** (Spike #2 NO-GO) — ne pas en afficher un. | Comparaison A/B fluide ; mots pratiqués alimentent le SRS. |
+
+**Done Sprint 5 :** l'itération 3 du PRD est livrée. Le produit couvre toute la boucle §4 du PRD (sauf scoring chiffré, écarté).
+
+---
+
+## Hors périmètre de ce plan (ne pas commencer sans décision)
+
+- **Scoring chiffré** (piste supervisée GOPT) — rouvrable uniquement via un spike dédié (§12).
+- **Mobile RN, sync E2E, auth/billing SaaS, 3 niveaux de correction, UK/US, shadowing, clonage de voix** (§18).
+- L'app est **mono-utilisateur local** pour l'instant : pas d'auth dans les Sprints 1-5 (le backend fin du lot 2.4 n'expose que le proxy ZDR).
+
+## Jalons de vérification globale (fin de chaque sprint)
+
+1. `pnpm build && pnpm test && pnpm lint:deps` verts.
+2. Relire les invariants §1 d'ARCHITECTURE.md — aucun violé.
+3. Mettre à jour ce fichier : cocher le sprint, noter les écarts/décisions prises (on ne dévie pas en silence).
