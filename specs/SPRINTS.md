@@ -53,7 +53,15 @@
 
 ---
 
-## Sprint 2 — MVP : la boucle de correction (Étape 2) · *le produit existe à la fin*
+## Sprint 2 — MVP : la boucle de correction (Étape 2) · *le produit existe à la fin* — lots 2.1→2.7 ✅ FAITS (2026-07-03) · **🛑 EN ATTENTE DU CHECKPOINT 2.8**
+
+> **Écarts/décisions notés :**
+> - **2.4 Done partiel** : implémenté et testé fournisseur **mocké** (10 tests) ; l'appel réel Claude (« une phrase fautive → JSON valide ») se valide **au checkpoint 2.8** avec la clé — un seul arrêt au lieu de deux.
+> - **2.5** : golden set 60 énoncés + CLI `pnpm eval` opérationnels ; la **baseline réelle** sera produite au checkpoint (clé + `wrangler dev` requis).
+> - **sqlite-wasm sous Turbopack** : son worker OPFS interne ne survit pas au bundling → la dist est **servie en statique** (`public/sqlite-wasm/`, copiée par `scripts/copy-sqlite-wasm.mjs`, gitignorée) et importée **nativement au runtime** ; l'adapter reçoit `sqlite3InitModule` en paramètre (types only). Sous-export `@loqua/adapters-web/sqlite`.
+> - **Audio non persisté** dans le MVP (les blobs micro restent en mémoire de session) — le stockage fichiers OPFS des clips arrive avec la practice (Sprint 5) ; le diff/l'historique n'en ont pas besoin.
+> - **Tests UI** : la logique d'affichage est extraite en view-model **pur** testé en Node (pas de jsdom/testing-library à ce stade) ; les scénarios navigateur réels (micro, OPFS, WebGPU) se valident au checkpoint.
+> - Le runner du pipeline (effets/retry) vit dans `core/pipeline/runner.ts`, testé avec ports factices (7 tests).
 
 `Enregistrer → STT local → correction 1 niveau (« naturel », en-US) → diff cliquable`, persistance locale. Rien d'autre (§18).
 
