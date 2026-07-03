@@ -43,3 +43,22 @@ export { addXp, makeXp, type Xp } from './contexts/gamification/xp.ts';
 // identity
 export { makeConsent, type Consent } from './contexts/identity/consent.ts';
 export { IdentityError } from './contexts/identity/errors.ts';
+
+// ports (contrats §9 — source de vérité technique)
+export type { AudioClip, AudioFormat } from './ports/audio-clip.ts';
+export type { ClockPort } from './ports/clock-port.ts';
+export type { CorrectionPort, CorrectionResult } from './ports/correction-port.ts';
+export type {
+  ModelDescriptor,
+  ModelRuntimePort,
+  ModelTask,
+} from './ports/model-runtime-port.ts';
+export type { PronunciationScoringPort } from './ports/pronunciation-scoring-port.ts';
+export type { QualityTier, RuntimeCapability } from './ports/runtime-capability.ts';
+export type { SpeechSynthesisPort } from './ports/speech-synthesis-port.ts';
+export type { StoragePort } from './ports/storage-port.ts';
+export type {
+  TranscriptionPort,
+  TranscriptionResult,
+  WordTiming,
+} from './ports/transcription-port.ts';
