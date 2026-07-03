@@ -5,6 +5,8 @@ import { useCallback } from 'react';
 import { useCorrectionApp } from '@/composition-root';
 import { ConsentGate } from '@/features/consent/ConsentGate';
 import { CorrectionDiff } from '@/features/correction-diff/CorrectionDiff';
+import { SessionHistory } from '@/features/history/SessionHistory';
+import { StorageControls } from '@/features/settings/StorageControls';
 import { useRecorder } from '@/features/recording/useRecorder';
 import { sessionView } from '@/entities/session/view-model';
 
@@ -117,6 +119,12 @@ export function CorrectionSession() {
           corrections={readyCorrections}
         />
       ) : null}
+
+      <SessionHistory sessions={appCtx.sessions} />
+      <StorageControls
+        persistent={appCtx.storagePersistent}
+        onEraseAll={() => void appCtx.eraseAll()}
+      />
     </ConsentGate>
   );
 }

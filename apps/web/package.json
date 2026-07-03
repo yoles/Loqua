@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/copy-sqlite-wasm.mjs",
     "build": "next build",
+    "predev": "node scripts/copy-sqlite-wasm.mjs",
     "dev": "next dev",
     "start": "next start",
     "test": "vitest run"
@@ -13,6 +15,7 @@
     "@loqua/adapters-web": "workspace:*",
     "@loqua/core": "workspace:*",
     "@loqua/ui-web": "workspace:*",
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "next": "^16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"

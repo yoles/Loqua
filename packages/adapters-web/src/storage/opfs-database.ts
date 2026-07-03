@@ -1,6 +1,11 @@
-import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
+// sqlite-wasm est chargé PAR L'APPELANT (import natif runtime, hors bundler —
+// son worker OPFS interne ne survit pas à l'analyse statique des bundlers).
+// Ici : uniquement des types (érasés) + la glu vers SqliteExecutor.
+import type sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 
 import type { SqliteExecutor, SqliteParam, SqliteRow } from './sqlite-executor.ts';
+
+export type Sqlite3InitModule = typeof sqlite3InitModule;
 
 export interface OpenedSqliteDatabase {
   readonly executor: SqliteExecutor;
@@ -33,8 +38,11 @@ function toExecutor(db: Oo1Database): SqliteExecutor {
   };
 }
 
-export async function openSqliteDatabase(fileName = 'loqua.db'): Promise<OpenedSqliteDatabase> {
-  const sqlite3 = await sqlite3InitModule();
+export async function openSqliteDatabase(
+  initModule: Sqlite3InitModule,
+  fileName = 'loqua.db',
+): Promise<OpenedSqliteDatabase> {
+  const sqlite3 = await initModule();
   const supportsOpfs = 'opfs' in sqlite3;
   // Frontière de lib : les types de sqlite-wasm rejettent Record<string, unknown>
   // pour resultRows (variance), mais le contrat runtime de oo1.DB.exec est identique
