@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm lint:deps && turbo run build",
     "test": "turbo run test",
+    "eval": "pnpm --filter @loqua/eval eval",
     "lint:deps": "depcruise packages apps services tooling --config .dependency-cruiser.cjs"
   },
   "devDependencies": {

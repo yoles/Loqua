@@ -5,9 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit",
+    "eval": "node --experimental-strip-types src/main.ts",
     "test": "vitest run"
   },
   "dependencies": {
-    "@loqua/core": "workspace:*"
+    "@loqua/core": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0"
   }
 }
