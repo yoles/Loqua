@@ -103,11 +103,11 @@ C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
 - 🐢 **Vitesse réglable** : 0.5× / 0.75× / 1× (pour décomposer les mots durs).
 - 🔤 **Transcription phonétique (IPA)** + découpage syllabique : `interesting → /ˈɪn.trəs.tɪŋ/`.
 - 🎙️ **Enregistre-toi & compare** : tu répètes et tu confrontes ta prononciation à la référence.
-  - **V1 — comparaison à l'oreille** (aucun modèle de scoring) : tu écoutes, tu compares.
-  - **Objectif — scoring phonème** : l'app score le mot son par son et surligne la syllabe ratée. **Faisabilité en local à valider (R&D — cf. §8 et [`../SPIKES.md`](SPIKES.md)) ; ne pas considérer comme acquis.**
+  - **V1 — comparaison à l'oreille** (aucun modèle de scoring) : tu écoutes, tu compares. **C'est la promesse tenue, le socle durable.**
+  - **Objectif lointain — scoring phonème chiffré** : l'app scorerait le mot son par son et surlignerait la syllabe ratée. Le spike de faisabilité a **tranché : le scoring local *non-supervisé* n'est pas fiable** (cf. [`../SPIKES.md`](SPIKES.md) §7) → **non livré**. Un score chiffré n'est envisageable que via un modèle **entraîné (supervisé)** : objectif R&D **non garanti**, à ne pas considérer comme acquis.
 - 👯 **Paires minimales** (ultérieur) : si tu rates un son récurrent (ex. `/ɪ/` vs `/iː/`), l'app te propose *ship / sheep*, *bit / beat*…
 
-> La comparaison rend la répétition consciente ; le scoring, quand il sera fiable en local, la rendra mesurable.
+> La comparaison rend la répétition consciente ; un scoring chiffré la rendrait mesurable — mais seulement s'il devient fiable en local (non acquis, cf. [`../SPIKES.md`](SPIKES.md) §7).
 
 ---
 
@@ -136,15 +136,15 @@ C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
 |---|---|---|
 | **Transcription (STT)** | Local (l'audio, donnée biométrique, ne sort pas) | Mature |
 | **Voix corrigée (TTS)** | Local | Mature |
-| **Correction (LLM)** | Ne traite que du **texte** : local par défaut, ou appoint cloud **Zero-Data-Retention en opt-in explicite** (l'audio n'est jamais concerné) | Compromis maîtrisé |
-| **Scoring prononciation** | Local obligatoire (a besoin de l'audio) → pas de solution cloud clé en main | Point dur / R&D |
+| **Correction (LLM)** | Ne traite que du **texte** (jamais l'audio). Défaut **par plateforme** : sur web = cloud **Zero-Data-Retention en opt-in** (le LLM navigateur n'est pas fiable, cf. Spike #1) ; sur desktop = **local** (llama.cpp) | Compromis maîtrisé |
+| **Scoring prononciation** | Local obligatoire (a besoin de l'audio) → pas de solution cloud clé en main. **Scoring chiffré non-supervisé : NO-GO** (Spike #2) → `ear-compare` | Point dur / R&D non garantie |
 
 ### Orientation retenue
 
 - **Audio 100 % local** (STT + TTS) : la donnée la plus sensible est éliminée du réseau, dès le départ.
-- **Correction locale par défaut**, avec une option opt-in « correction avancée » n'envoyant que du **texte** à un LLM cloud ZDR — jamais l'audio, jamais sans consentement visible.
+- **Correction = texte uniquement**, jamais l'audio. Défaut **par plateforme** : sur **desktop**, LLM **local** (100 % local) ; sur **web**, cloud **ZDR en opt-in** (le LLM navigateur n'étant pas fiable — Spike #1), toujours avec consentement visible.
 - **Desktop = cible du 100 % local** (plus de ressources) ; le web sert de vitrine et d'entrée « lite ».
-- **Scoring progressif** : comparaison à l'oreille d'abord, scoring phonème local ensuite (R&D).
+- **Scoring** : comparaison à l'oreille, **durablement** — le scoring phonème chiffré local (non-supervisé) est écarté (Spike #2 NO-GO) ; un score chiffré resterait une R&D supervisée non garantie.
 
 Bénéfice induit : le traitement local a un **coût récurrent quasi nul**, là où une solution cloud facture chaque minute d'usage.
 
@@ -167,8 +167,8 @@ Deck **SRS** de tes fautes (local, déterministe, gratuit — absent des concurr
 **Itération 3 — la prononciation**
 TTS local · tap-sur-mot + boucle/vitesse · « enregistre-toi & compare à l'oreille ».
 
-**En R&D parallèle (hors chemin critique)**
-Scoring phonème **local** (GOP). Validé par un spike de faisabilité **avant** tout engagement (cf. [`../SPIKES.md`](SPIKES.md)). S'il n'est pas fiable, on reste sur la comparaison à l'oreille et on ne survend pas la promesse.
+**Scoring phonème chiffré — statut : R&D non garantie (hors chemin critique)**
+Le spike de faisabilité a été fait : le GOP **local non-supervisé n'est pas fiable** (cf. [`../SPIKES.md`](SPIKES.md) §7). Décision : **on reste sur la comparaison à l'oreille** et on ne survend pas la promesse. Un score chiffré n'est rouvrable que via un modèle **entraîné (supervisé)** — piste R&D lourde, non planifiée, à n'engager que si le scoring devient prioritaire.
 
 **Plus tard — approfondir & élargir**
 Correction à 3 niveaux · variantes UK/US · défis scénarios dev · paires minimales · badges avancés · shadowing · **mobile (React Native)** · (option) clonage de voix.

@@ -37,7 +37,7 @@
 | 3 | Stack client | **Next.js (web) + Tauri (desktop) d'abord.** Même frontend React, adapters substitués. |
 | 4 | Machine à états | **Maison** (reducer TS pur dans le `core`). Migration XState possible plus tard, derrière la même frontière. |
 | 5 | Persistance | **SQLite partout** (SQLite-WASM + OPFS sur web ; SQLite/SQLCipher natif desktop/mobile) derrière `StoragePort`. |
-| 6 | Scoring | **`ear-compare` tôt** (aucun modèle). **GOP local en spike parallèle**, hors chemin critique du MVP. |
+| 6 | Scoring | **`ear-compare` durable** (aucun modèle) — socle V1. **Spike GOP fait : NO-GO** pour le scoring chiffré non-supervisé (cf. SPIKES §7). Le score chiffré n'est atteignable que via un scorer **supervisé (GOPT)** — piste R&D non promise, hors MVP. |
 | 7 | Sync SaaS | **Local-only maintenant.** Invariants d'effacement/copie-de-valeur figés dès aujourd'hui. Sync E2E = feature ultérieure. |
 | — | LLM correction | **Cloud-ZDR opt-in par défaut (Option B)**, adapter **local dispo sur desktop** (Tauri, gros modèles). Choisi par plateforme + consentement. |
 
@@ -77,7 +77,7 @@
 | Plateforme | Runtime des modèles | LLM correction par défaut | Rôle |
 |---|---|---|---|
 | **Web** | `transformers.js` (ONNX + WebGPU), `kokoro.js`, WebLLM | **Cloud-ZDR opt-in** (WebLLM possible si bonne machine) | Vitrine, essai rapide, entrée "lite" |
-| **Desktop (Tauri)** | Sidecars natifs Rust : `whisper.cpp`, `llama.cpp`, Kokoro, wav2vec2 | **Local** (jusqu'à 14-27B) — 100 % local possible | Foyer du 100 % local, scoring GOP |
+| **Desktop (Tauri)** | Sidecars natifs Rust : `whisper.cpp`, `llama.cpp`, Kokoro (wav2vec2 seulement si piste scoring supervisée ouverte, cf. §12) | **Local** (jusqu'à 14-27B) — 100 % local possible | Foyer du 100 % local |
 | **Mobile (plus tard)** | WhisperKit, `llama.rn`, Piper | Cloud-ZDR opt-in | Grand public |
 
 **Principe :** web et desktop **partagent le frontend React et le `core`**. Seuls les adapters injectés diffèrent (composition root par app). Le mobile réécrit l'UI en RN mais réutilise le `core` à 100 %.
@@ -177,7 +177,7 @@ Règle : un événement transporte des **copies de valeur immuables**, jamais de
 | `TranscriptionPort` | audio → texte + timestamps mots | whisper WASM / whisper.cpp / WhisperKit |
 | `CorrectionPort` | texte → correction structurée | WebLLM ou cloud-ZDR / llama.cpp ou cloud / cloud |
 | `SpeechSynthesisPort` | texte → audio | kokoro.js (fallback WebSpeech) / Kokoro natif / Piper |
-| `PronunciationScoringPort` | audio + mot → score | ear-compare / GOP wav2vec2 / GOP |
+| `PronunciationScoringPort` | audio + mot → `UnscoredComparison` (défaut) | ear-compare (toutes plateformes). `ScoreResult` chiffré conditionné à la piste R&D supervisée — cf. §12 |
 | `StoragePort` | persistance | sqlite-wasm+OPFS / SQLite / SQLCipher |
 | `ModelRuntimePort` | cycle de vie des modèles | download/cache OPFS / filesystem / filesystem |
 | `SyncPort` (plus tard) | push/pull blobs chiffrés | HTTP api |
@@ -326,9 +326,9 @@ IDLE
 
 ## 12. Scoring — feuille de route
 
-1. **V1 (MVP+) — `ear-compare`** : adapter qui renvoie `UnscoredComparison`. L'UI joue référence + enregistrement, affiche éventuellement waveform/pitch (DSP local simple). Zéro modèle, zéro risque ML.
-2. **V2 — GOP local** : `wav2vec2` (reconnaissance phonème) + alignement forcé + Goodness of Pronunciation → `ScoreResult`. **Desktop d'abord.** Corpus : SpeechOcean762. **Traité comme un spike R&D (§19), budget dédié.**
-3. **V3** — paires minimales, calibrage. Seulement quand V2 est fiable.
+1. **V1 (MVP+) — `ear-compare` (socle durable)** : adapter qui renvoie `UnscoredComparison`. L'UI joue référence + enregistrement, affiche éventuellement waveform/pitch (DSP local simple). Zéro modèle, zéro risque ML. **C'est la promesse tenue.**
+2. **GOP non-supervisé — écarté (Spike #2 = NO-GO).** `wav2vec2` phonème + alignement forcé + Goodness of Pronunciation **ne produit pas** de score chiffré fiable (PCC mot 0,25, F1 détection 0,29 sur SpeechOcean762 ; les deux formulations GOP plafonnent — cf. SPIKES §7). On **ne livre pas** de `ScoreResult` chiffré par cette voie.
+3. **Piste R&D (non planifiée, non promise) — scorer supervisé façon GOPT** : petit modèle entraîné sur SpeechOcean762 (features GOP + alignement → scores humains). Seule voie crédible vers un `ScoreResult` chiffré, **desktop d'abord**. À n'ouvrir que si le scoring devient un objectif produit prioritaire, et via un spike supervisé dédié. Tant que ce spike n'a pas réussi, `PronunciationScoringPort` reste sur `UnscoredComparison`.
 
 Les consommateurs (SRS, gamification) gèrent `UnscoredComparison` **dès maintenant** pour ne pas payer l'ajout du scoring partout plus tard.
 
@@ -433,8 +433,8 @@ Ils informent la forme finale des ports (streaming vs batch, faisabilité local)
 - `/adapters-tauri` : whisper.cpp, llama.cpp (LLM **local**), Kokoro. → l'Option A (100 % local) devient réelle sur desktop.
 
 ### Étape 5 — Prononciation
-- TTS local + tap-sur-mot + boucle/vitesse + `ear-compare`.
-- GOP local (issu du spike #2) quand prêt, desktop d'abord.
+- TTS local + tap-sur-mot + boucle/vitesse + `ear-compare` (le socle qu'on livre).
+- Scoring chiffré : **non prévu ici** — le GOP non-supervisé est écarté (Spike #2 NO-GO). N'ouvrir la piste supervisée (GOPT, §12) que si un spike dédié la valide.
 
 ---
 
