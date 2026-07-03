@@ -91,6 +91,7 @@
 > - **3.2 — dédup par contenu** : id de carte dérivé (FNV-1a de type|original|fixed) — une erreur récurrente retombe sur la MÊME carte sans remettre son scheduling à zéro.
 > - **3.3 — `spokenMs` ≈ durée du clip** (pas de VAD dans le MVP ; l'enregistrement est démarré/arrêté manuellement). À raffiner si un VAD arrive (Sprint 5+).
 > - **3.4 — composition root refactoré en Provider React** (une seule instance partagée entre widgets) ; review/gamification rafraîchis sur événements après `settled()` des policies.
+> - **Fix persistance (post-3.4, corrige un legs du 2.7)** : l'adapter sqlite-wasm main-thread ne pouvait JAMAIS monter OPFS (`createSyncAccessHandle`/`Atomics.wait` = worker-only par spec navigateur) → repli mémoire permanent. SQLite vit désormais dans un **Worker dédié** (`apps/web/public/sqlite-worker.mjs`), VFS **OPFS SAHPool** (le VFS `opfs` classique échoue silencieusement ici, vérifié en live), protocole postMessage validé Zod, `SqliteExecutor` async. Limite connue : le pool SAH est exclusif — un 2ᵉ onglet retombe en mémoire (visible, invariant #5).
 
 | Lot | Livrable | Done quand |
 |---|---|---|
