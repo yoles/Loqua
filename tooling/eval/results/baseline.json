@@ -1,0 +1,140 @@
+{
+  "ranAt": "2026-07-03T19:14:38.140Z",
+  "apiUrl": "http://localhost:8787/v1/correction",
+  "durationMs": 148171,
+  "total": 60,
+  "passed": 43,
+  "invalidOutputs": 0,
+  "subjectErrors": 0,
+  "detectionRateByType": {
+    "tense": 0.8571428571428571,
+    "grammar": 0.875,
+    "vocabulary": 0.6363636363636364,
+    "idiom": 0.375,
+    "syntax": 0.25,
+    "word-order": 1,
+    "article": 0.8333333333333334
+  },
+  "judge": [
+    {
+      "caseId": "standup-01",
+      "score": 4,
+      "reason": "The tool's correction is excellent. The corrected text \"Yesterday I worked on the login bug and I fixed it.\" is natural, professional, and maintains the speaker's intent perfectly. The explanations are accurate, concise, and pedagogically helpful—clearly explaining the incorrect use of present perfect with a specific past time reference and emphasizing tense consistency. The only minor distinction from the human reference is the retention of \"I\" before \"fixed\" (and the added period), which is still perfectly natural English, though the reference's version is slightly more concise. Both versions are semantically equivalent and idiomatic. The explanations would genuinely help a learner understand the underlying grammar rule."
+    },
+    {
+      "caseId": "standup-02",
+      "score": 4,
+      "reason": "The corrected text \"I agree with Sarah's approach for the migration\" is natural, professional English that faithfully preserves the speaker's intent. The explanations are accurate and helpful: correctly identifying \"am agree\" as a grammar error and explaining the possessive 's construction. However, the tool changed \"to\" (in the human reference) to \"for,\" which while acceptable, represents a minor semantic shift. The reference uses \"approach to the migration\" (emphasizing the migration as a target/destination), while the tool uses \"approach for the migration\" (emphasizing its purpose). Both are grammatically correct and convey the intended meaning, but this represents a slight deviation from best practice when human reference corrections are available. The explanations themselves are clear and pedagogically sound."
+    },
+    {
+      "caseId": "standup-03",
+      "score": 2,
+      "reason": "The tool's correction \"Today I will do a deploy of the new version to staging\" is problematic on multiple counts. While it correctly identifies the \"on staging → to staging\" issue, it fails to properly address the main idiom problem. The tool suggests \"do a deploy\" as the correction, but this is still awkward and unnatural in professional English. The reference correction correctly uses \"deploy\" as a verb (\"I'll deploy\"), which is the natural professional phrasing. The tool's correction keeps \"deploy\" as a noun phrase (\"do a deploy\"), which is not idiomatic English and would be jarring in a professional context. This represents a fundamental misunderstanding of the idiom - the issue isn't that \"make a deploy\" should become \"do a deploy,\" but rather that the verb form \"deploy\" should be used directly. The explanations are clear but misleading, as they validate an incorrect \"correction\" that doesn't match natural professional spoken English or the reference standard."
+    },
+    {
+      "caseId": "standup-04",
+      "score": 5,
+      "reason": "The tool's corrected text is excellent. It matches the human reference exactly and produces natural, professional spoken English that faithfully preserves the speaker's intent. The two corrections are both accurate: (1) \"I work on\" → \"I've been working on\" correctly applies present perfect continuous for an action starting in the past and continuing to the present, which is the appropriate tense with \"since Monday\"; (2) \"almost finish\" → \"almost finished\" correctly uses the past participle as an adjective in the predicate. Both explanations are clear, concise, and pedagogically helpful for a learner, directly explaining the grammatical rules and the reasoning behind each correction without being verbose. The tool demonstrates solid understanding of English grammar and provides quality explanations suitable for language learning."
+    },
+    {
+      "caseId": "standup-05",
+      "score": 4,
+      "reason": "The tool's correction \"I have a question about the API contract for the payment service\" is natural, professional English and conveys the speaker's intent well. The explanation is short and accurate, helping learners understand the distinction between \"doubt\" (disbelief) and \"question\" (seeking clarification) in American English. While the human reference uses \"concerns\" instead, \"question\" is equally valid and semantically appropriate for this context. The main reason this isn't a 5 is that \"concerns\" from the reference might slightly better capture the undertone of the original statement in a professional setting, where having \"doubts\" about a contract often implies concerns rather than just needing clarification. However, \"question\" remains a correct and natural alternative that captures the primary intent."
+    },
+    {
+      "caseId": "standup-06",
+      "score": 5,
+      "reason": "The tool's correction is excellent. Both key grammatical issues are properly fixed: (1) \"is red\" → \"has been red\" correctly applies present perfect to indicate a state continuing from the past, and (2) \"someone can take a look\" → \"can someone take a look?\" correctly inverts the auxiliary to form a proper question. The corrected text is natural, professional, and faithful to the speaker's intent. The explanations are clear, concise, and educationally valuable—they explain the \"why\" behind each correction without being verbose. The use of a semicolon instead of the reference's em-dash is stylistically acceptable in professional English. This is semantically equivalent to the reference correction."
+    },
+    {
+      "caseId": "standup-07",
+      "score": 4,
+      "reason": "The corrected text \"there's still the documentation to write\" is natural, professional English that faithfully captures the speaker's intent. It's semantically equivalent to the reference correction and actually sounds quite natural in spoken English. The explanation correctly identifies that \"rests\" is not the appropriate verb and explains the correction clearly. The suggested structure \"there's still ... to write\" is idiomatic and helpful for a learner. Minor deduction because the reference's phrasing \"the documentation still needs to be written\" is slightly more common in professional contexts, though the tool's correction is equally valid and perhaps more concise for spoken English."
+    },
+    {
+      "caseId": "standup-08",
+      "score": 4,
+      "reason": "The tool's correction is grammatically sound and semantically equivalent to the reference. Both versions fix the core error (removing \"of\" and adding \"the\"). However, the tool keeps \"Actually\" while the reference uses \"Currently,\" which better reflects the speaker's intent of describing their present activity. The explanation is accurate and helpful, correctly identifying that \"refactoring\" takes a direct object. The main weakness is that the tool preserves less natural word choice (\"Actually\" vs \"Currently\"), making it slightly less professional for workplace spoken English, though still acceptable."
+    },
+    {
+      "caseId": "standup-09",
+      "score": 4,
+      "reason": "The tool's correction is very good overall. The corrected text \"No blockers for me, I'm continuing on the same subject as yesterday\" is natural, professional, and faithful to the speaker's intent. The grammar fixes are correct (plural \"blockers,\" present continuous \"I'm continuing,\" and \"as\" instead of \"than\"). The explanations are clear and helpful for a learner. The only minor difference from the human reference is that the tool uses \"subject\" while the reference uses \"topic\"—both are semantically equivalent and appropriate in context. The explanations are well-structured, concise, and educationally sound. The punctuation (period instead of em-dash) is also acceptable for professional spoken English transcription."
+    },
+    {
+      "caseId": "standup-10",
+      "score": 4,
+      "reason": "The tool correctly identified and fixed the grammatical error (\"discuss about\" → \"discuss\"). The corrected text is natural, professional, and faithful to the speaker's intent. The explanation is accurate and helpful—correctly identifying that \"discuss\" is a transitive verb that doesn't require \"about\" before its object. Minor deduction: while the correction is slightly different from the human reference (which used \"suggest\" instead of \"propose\"), both maintain semantic equivalence. The tool's choice to preserve \"propose\" better respects the speaker's intent regarding tone and formality."
+    }
+  ],
+  "failedCases": [
+    {
+      "id": "standup-05",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-08",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-12",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-01",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-07",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-12",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-03",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-07",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-10",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-03",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-10",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-12",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-04",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-05",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-09",
+      "outcome": "missed-detections"
+    }
+  ]
+}
