@@ -32,9 +32,17 @@ export { PronunciationError } from './contexts/pronunciation/errors.ts';
 export { makeWord, type Word } from './contexts/pronunciation/word.ts';
 
 // srs
-export { makeCard, type Card, type ReviewItem } from './contexts/srs/card.ts';
+export { makeCard, reviewCard, type Card, type ReviewItem } from './contexts/srs/card.ts';
 export { SrsError } from './contexts/srs/errors.ts';
 export { REVIEW_GRADES, type ReviewGrade } from './contexts/srs/review-grade.ts';
+export {
+  applyReview,
+  initialScheduling,
+  isDue,
+  makeScheduling,
+  SCHEDULING_RULES,
+  type Scheduling,
+} from './contexts/srs/scheduling.ts';
 
 // events
 export type { DomainEvent, EventKind, EventOfKind } from './events/domain-events.ts';

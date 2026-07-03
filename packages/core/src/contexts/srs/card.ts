@@ -1,7 +1,10 @@
 import { SrsError } from './errors.ts';
+import { applyReview, initialScheduling, makeScheduling } from './scheduling.ts';
 import { deepFreeze } from '../../shared/freeze.ts';
 import type { CardId } from '../../shared/ids.ts';
 import type { ErrorType } from '../correction/error-type.ts';
+import type { ReviewGrade } from './review-grade.ts';
+import type { Scheduling } from './scheduling.ts';
 
 // Invariant #6 : la Card stocke une COPIE DE VALEUR de l'item —
 // jamais une référence vers la Session (droit à l'effacement by design).
@@ -18,6 +21,7 @@ export interface Card {
   readonly id: CardId;
   readonly item: ReviewItem;
   readonly createdAtMs: number;
+  readonly scheduling: Scheduling;
 }
 
 function validateItem(item: ReviewItem): ReviewItem {
@@ -36,7 +40,12 @@ function validateItem(item: ReviewItem): ReviewItem {
   return { kind: 'error', type: item.type, original, fixed };
 }
 
-export function makeCard(parts: { id: CardId; item: ReviewItem; createdAtMs: number }): Card {
+export function makeCard(parts: {
+  id: CardId;
+  item: ReviewItem;
+  createdAtMs: number;
+  scheduling?: Scheduling;
+}): Card {
   if (!Number.isFinite(parts.createdAtMs) || parts.createdAtMs < 0) {
     throw new SrsError('a card needs a non-negative creation timestamp');
   }
@@ -44,5 +53,18 @@ export function makeCard(parts: { id: CardId; item: ReviewItem; createdAtMs: num
     id: parts.id,
     item: validateItem(parts.item),
     createdAtMs: parts.createdAtMs,
+    scheduling:
+      parts.scheduling === undefined
+        ? initialScheduling(parts.createdAtMs)
+        : makeScheduling(parts.scheduling),
+  });
+}
+
+export function reviewCard(card: Card, grade: ReviewGrade, nowMs: number): Card {
+  return deepFreeze({
+    id: card.id,
+    item: card.item,
+    createdAtMs: card.createdAtMs,
+    scheduling: applyReview(card.scheduling, grade, nowMs),
   });
 }
