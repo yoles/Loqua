@@ -6,7 +6,7 @@ module.exports = {
       severity: 'error',
       comment:
         "Le core est du TS pur : jamais d'adapter, d'app, de framework, de lib externe ni d'API plateforme",
-      from: { path: '^packages/core/src' },
+      from: { path: '^packages/core/src', pathNot: '\\.test\\.ts$' },
       to: { pathNot: '^packages/core/src' },
     },
     {
