@@ -49,6 +49,11 @@ export {
   type ErrorCardPolicy,
   type ErrorCardPolicyDeps,
 } from './contexts/srs/error-card-policy.ts';
+export {
+  createReviewDeck,
+  type ReviewDeck,
+  type ReviewDeckDeps,
+} from './contexts/srs/review-deck.ts';
 
 // events
 export type { DomainEvent, EventKind, EventOfKind } from './events/domain-events.ts';
