@@ -67,6 +67,12 @@ export {
   type PipelineEvent,
   type PipelineState,
 } from './pipeline/pipeline.ts';
+export {
+  createPipelineRunner,
+  type PipelineRunner,
+  type PipelineRunnerDeps,
+  type ReadySession,
+} from './pipeline/runner.ts';
 
 // ports (contrats §9 — source de vérité technique)
 export type { AudioClip, AudioFormat } from './ports/audio-clip.ts';
