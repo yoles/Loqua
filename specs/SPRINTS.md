@@ -84,7 +84,13 @@
 
 ---
 
-## Sprint 3 — Le fossé : SRS + rétention (Étape 3)
+## Sprint 3 — Le fossé : SRS + rétention (Étape 3) — ✅ FAIT (2026-07-03)
+
+> **Écarts/décisions notés :**
+> - **3.1 — SM-2 retenu** (variante Anki, 4 grades `again/hard/good/easy`), pas FSRS : le core interdit toute dépendance runtime (FSRS = 17 poids à réimplémenter/valider à la main) et le langage ubiquitaire du contexte (`Ease`, `Interval`, `Lapse`) est celui de SM-2. FSRS reste substituable derrière la même interface (`Scheduling`/`applyReview`).
+> - **3.2 — dédup par contenu** : id de carte dérivé (FNV-1a de type|original|fixed) — une erreur récurrente retombe sur la MÊME carte sans remettre son scheduling à zéro.
+> - **3.3 — `spokenMs` ≈ durée du clip** (pas de VAD dans le MVP ; l'enregistrement est démarré/arrêté manuellement). À raffiner si un VAD arrive (Sprint 5+).
+> - **3.4 — composition root refactoré en Provider React** (une seule instance partagée entre widgets) ; review/gamification rafraîchis sur événements après `settled()` des policies.
 
 | Lot | Livrable | Done quand |
 |---|---|---|
