@@ -34,6 +34,11 @@ export { makeWord, type Word } from './contexts/pronunciation/word.ts';
 // srs
 export { makeCard, type Card, type ReviewItem } from './contexts/srs/card.ts';
 export { SrsError } from './contexts/srs/errors.ts';
+export { REVIEW_GRADES, type ReviewGrade } from './contexts/srs/review-grade.ts';
+
+// events
+export type { DomainEvent, EventKind, EventOfKind } from './events/domain-events.ts';
+export { createEventBus, type EventBus, type Unsubscribe } from './events/event-bus.ts';
 
 // gamification
 export { GamificationError } from './contexts/gamification/errors.ts';
