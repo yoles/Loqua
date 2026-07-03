@@ -5,3 +5,7 @@ packages:
   - "tooling/*"
 allowBuilds:
   esbuild: true
+  # deps natives Node de transformers.js — inutiles (adapter navigateur only)
+  onnxruntime-node: false
+  protobufjs: false
+  sharp: false

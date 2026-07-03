@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@huggingface/transformers": "4.2.0",
     "@loqua/core": "workspace:*",
     "@sqlite.org/sqlite-wasm": "3.53.0-build1"
   },
