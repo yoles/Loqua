@@ -232,3 +232,33 @@ LLM local navigateur (Qwen2.5-1.5B q4f16, WebLLM) : **échec** — `Invalid Shad
 **Le « web 100 % local » sous Linux/NVIDIA est impraticable pour le grand public** (flags + `--disable-gpu-sandbox` requis, fp16 absent, q8 cassé, LLM navigateur en échec). → **Confirme la décision d'archi** : 100 % local desktop = **Tauri** (Vulkan natif, `whisper.cpp`/`llama.cpp` natifs, sans flags ni sandbox) ; **web = vitrine + lite** (STT WASM à 0,29× — utilisable — + LLM cloud-ZDR), propre nativement sur **Mac/Windows**.
 
 → **Prochaine étape logique : Spike #3 (Tauri).**
+
+---
+
+## 6. Résultats — Spike #3 (2026-07-03) · verdict **GO**
+
+> Harness jetable **non versionné** (`spikes/spike-3-tauri/`, gitignoré). Seul ce verdict fait foi.
+
+### Setup
+Même machine (RTX 3050, 12 threads, Ubuntu X11, Rust 1.96). Tauri 2 (React-TS) via `create-tauri-app`. STT natif = `whisper-rs` (compile `whisper.cpp`). Modèle `ggml-base.en.bin`, clip JFK 16 kHz.
+
+**Friction : quasi nulle.** Une seule install manquante (`sudo apt install cmake`) — toutes les libs desktop (webkit2gtk-4.1, gtk3, libsoup3) étaient déjà là. Coût unique : le 1ᵉʳ build compile whisper.cpp (~minutes). **Aucun flag, aucun `--disable-gpu-sandbox`, aucune quantification cassée** — contraste total avec le Spike #1.
+
+### Résultat
+| Hypothèse | Verdict |
+|---|---|
+| **H1** — frontend React dans Tauri | ✅ fenêtre desktop rendue |
+| **H2** — adapter substitué, `core` agnostique | ✅ `core.ts` n'importe pas Tauri ; web↔tauri = seul l'adapter change (composition root). Preuve visuelle : navigateur → adapter « web (stub) », fenêtre Tauri → adapter « tauri (whisper.cpp natif) » |
+| **H3** — audio par chemin de fichier | ✅ `wav_path` (string) passé à l'IPC, pas d'octets |
+| **RTF** | ✅ **0,151×** — 11 s transcrites en 1660 ms, **whisper.cpp natif CPU** |
+| Qualité | ✅ transcript JFK au mot près |
+
+### Verdict : **GO**
+whisper.cpp natif CPU atteint **0,151×** — équivalent au WebGPU navigateur (0,13-0,21×) **mais sans aucune des frictions du #1**. Le pattern « même frontend + `core` agnostique + adapters substitués » est **validé**.
+
+### Enseignement
+**Tauri est le véhicule robuste du 100 % local desktop**, comme le postulait l'archi. Là où le navigateur exige flags/sandbox/precision-hacks (Spike #1), Tauri parle au natif directement. Bonus non testé : feature CUDA de `whisper-rs` → la RTX 3050 accélérerait encore. Décision d'archi (100 % local = desktop/Tauri ; web = vitrine/lite) **confirmée sur les deux bouts** (#1 + #3).
+
+### Reste
+- **Spike #2 (scoring GOP)** — le seul non fait ; R&D indépendante (Python), hors chemin critique du MVP.
+- Le pipeline complet local desktop (STT natif → LLM local llama.cpp → TTS Kokoro natif) reste à assembler, mais les briques STT sont prouvées (natif #3 + WASM #1).
