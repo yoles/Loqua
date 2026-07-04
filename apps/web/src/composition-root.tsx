@@ -46,6 +46,29 @@ const CORRECTION_ENDPOINT =
 // principal ; la dist sqlite-wasm est copiée à côté par copy-sqlite-wasm.mjs.
 const SQLITE_WORKER_URL = '/sqlite-worker.mjs';
 
+interface OpenedStorage {
+  readonly storage: StoragePort;
+  readonly persistent: boolean;
+  close(): void;
+}
+
+// Même frontend web↔desktop (Spike #3) : seul l'adapter storage change selon le
+// runtime. Imports dynamiques pour ne charger que l'adapter de la plateforme.
+async function openStorageForRuntime(): Promise<OpenedStorage> {
+  if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+    const { createTauriSqliteStoragePort, tauriInvoke } = await import('@loqua/adapters-tauri');
+    return {
+      storage: createTauriSqliteStoragePort(tauriInvoke),
+      persistent: true,
+      close: () => {},
+    };
+  }
+  const { openWorkerSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
+  const db = await openWorkerSqliteDatabase(new Worker(SQLITE_WORKER_URL, { type: 'module' }));
+  const storage = await createSqliteStoragePort(db.executor);
+  return { storage, persistent: db.persistent, close: db.close };
+}
+
 const systemClock: ClockPort = {
   now: () => Date.now(),
   timezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -132,17 +155,14 @@ function useCorrectionAppInternal(): CorrectionApp {
     const detachers: (() => void)[] = [];
     (async () => {
       try {
-        const { openWorkerSqliteDatabase } = await import('@loqua/adapters-web/sqlite');
-        const db = await openWorkerSqliteDatabase(
-          new Worker(SQLITE_WORKER_URL, { type: 'module' }),
-        );
+        const opened = await openStorageForRuntime();
         if (cancelled) {
-          db.close();
+          opened.close();
           return;
         }
-        const storage = await createSqliteStoragePort(db.executor);
+        const storage = opened.storage;
         storageRef.current = storage;
-        setStoragePersistent(db.persistent);
+        setStoragePersistent(opened.persistent);
 
         const errorCards = attachErrorCardCreation(app.bus, { storage, clock: systemClock });
         const gamificationPolicy = attachGamification(app.bus, { storage, clock: systemClock });

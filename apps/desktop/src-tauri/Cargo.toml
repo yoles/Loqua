@@ -1,0 +1,24 @@
+[package]
+name = "loqua-desktop"
+version = "0.1.0"
+description = "Loqua — coach vocal d'anglais, 100 % local"
+edition = "2021"
+
+[lib]
+name = "loqua_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# SQLite natif chiffré au repos (SQLCipher, ARCHITECTURE §13)
+rusqlite = { version = "0.37", features = ["bundled-sqlcipher-vendored-openssl"] }
+getrandom = "0.3"
+thiserror = "2"
+
+[profile.release]
+strip = true

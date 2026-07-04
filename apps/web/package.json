@@ -6,12 +6,14 @@
   "scripts": {
     "prebuild": "node scripts/copy-sqlite-wasm.mjs",
     "build": "next build",
+    "build:export": "node scripts/copy-sqlite-wasm.mjs && DESKTOP_EXPORT=1 next build",
     "predev": "node scripts/copy-sqlite-wasm.mjs",
     "dev": "next dev",
     "start": "next start",
     "test": "vitest run"
   },
   "dependencies": {
+    "@loqua/adapters-tauri": "workspace:*",
     "@loqua/adapters-web": "workspace:*",
     "@loqua/core": "workspace:*",
     "@loqua/ui-web": "workspace:*",

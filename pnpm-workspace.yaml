@@ -10,3 +10,4 @@ allowBuilds:
   protobufjs: false
   sharp: false
   workerd: true # runtime de wrangler dev (services/api)
+  "@tauri-apps/cli": true # binaire du CLI Tauri (apps/desktop)

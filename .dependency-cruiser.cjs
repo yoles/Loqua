@@ -18,6 +18,14 @@ module.exports = {
       to: { path: '^node:' },
     },
     {
+      name: 'adapters-tauri-webview-pur',
+      severity: 'error',
+      comment:
+        "Les adapters Tauri vivent dans la webview : jamais d'API Node (le natif vit côté Rust)",
+      from: { path: '^packages/adapters-tauri/src', pathNot: '\\.test\\.ts$' },
+      to: { path: '^node:' },
+    },
+    {
       name: 'ui-web-sans-adapter',
       severity: 'error',
       comment: "ui-web n'importe jamais un adapter (l'injection se fait au composition root)",

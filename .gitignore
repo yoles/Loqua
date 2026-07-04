@@ -8,9 +8,12 @@ node_modules/
 .turbo/
 dist/
 .next/
+out/
 coverage/
 apps/web/public/sqlite-wasm/
 .wrangler/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
 
 # secrets — jamais committés
 .env*
