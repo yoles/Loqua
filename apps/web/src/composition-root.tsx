@@ -37,7 +37,15 @@ import {
   createSqliteStoragePort,
   createTransformersAsrEngineFactory,
   createWhisperTranscriptionPort,
+  decodeToPcm16k,
 } from '@loqua/adapters-web';
+import {
+  createTauriModelRuntime,
+  createTauriTranscriptionPort,
+  isTauriRuntime,
+  tauriInvoke,
+} from '@loqua/adapters-tauri';
+import type { TranscriptionPort } from '@loqua/core';
 import type { SessionRecord } from '@/entities/session/record';
 
 const CORRECTION_ENDPOINT =
@@ -108,12 +116,21 @@ function useCorrectionAppInternal(): CorrectionApp {
     const bus = createEventBus();
     const guard = createEgressGuard(bus, null);
 
-    const transcription = createWhisperTranscriptionPort({
-      engineFactory: createTransformersAsrEngineFactory(),
-      onDownloadProgress: (ratio) => {
-        setDownloadProgress(ratio >= 1 ? null : ratio);
-      },
-    });
+    const onDownloadProgress = (ratio: number): void => {
+      setDownloadProgress(ratio >= 1 ? null : ratio);
+    };
+    // Desktop : STT natif whisper.cpp (audio par fichier local) ; web : WASM/WebGPU.
+    const transcription: TranscriptionPort = isTauriRuntime()
+      ? createTauriTranscriptionPort({
+          invoke: tauriInvoke,
+          modelRuntime: createTauriModelRuntime({ invoke: tauriInvoke }),
+          decodeToPcm16k,
+          onDownloadProgress,
+        })
+      : createWhisperTranscriptionPort({
+          engineFactory: createTransformersAsrEngineFactory(),
+          onDownloadProgress,
+        });
 
     const correction = createCloudCorrectionPort({
       endpoint: CORRECTION_ENDPOINT,

@@ -19,6 +19,12 @@ serde_json = "1"
 rusqlite = { version = "0.37", features = ["bundled-sqlcipher-vendored-openssl"] }
 getrandom = "0.3"
 thiserror = "2"
+# STT natif whisper.cpp (Spike #3) — inférence 100 % locale
+whisper-rs = "0.14"
+hound = "3"
+# Download des modèles à la première utilisation (ModelRuntimePort) + checksum
+ureq = "2"
+sha2 = "0.10"
 
 [profile.release]
 strip = true
