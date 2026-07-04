@@ -52,14 +52,47 @@ describe('session view model reflects the pipeline state', () => {
   });
 
   it('surfaces an STT failure with its reason (never silent)', () => {
-    const failed = transition(
-      transition(transition(INITIAL_PIPELINE_STATE, { type: 'RecordStarted' }), {
-        type: 'RecordStopped',
-        clipId: 'c',
-      }),
-      { type: 'TranscribeErr', reason: 'model OOM' },
+    const failed = failedSttWith('model OOM');
+
+    expect(sessionView(failed).failure).toMatchObject({ kind: 'stt', reason: 'model OOM' });
+  });
+
+  it('allows retry on a transient STT failure', () => {
+    const view = sessionView(failedSttWith('model OOM'));
+
+    expect(view.failure?.cause).toBe('other');
+    expect(view.failure?.canRetry).toBe(true);
+  });
+
+  it('forbids retry on an undecodable capture (same clip would fail again)', () => {
+    const view = sessionView(
+      failedSttWith('local transcription failed (clip x): audio-decode-failed: empty capture'),
     );
 
-    expect(sessionView(failed).failure).toEqual({ kind: 'stt', reason: 'model OOM' });
+    expect(view.failure?.cause).toBe('undecodable-audio');
+    expect(view.failure?.canRetry).toBe(false);
+  });
+
+  it('identifies an egress refusal so the UI can propose the cloud opt-in', () => {
+    const failedLlm = transition(
+      transition(stateAt('TRANSCRIBED'), { type: 'CorrectStarted' }),
+      { type: 'CorrectErr', reason: 'egress refused: no-consent' },
+    );
+
+    const view = sessionView(failedLlm);
+
+    expect(view.failure?.kind).toBe('llm');
+    expect(view.failure?.cause).toBe('egress-refused');
+    expect(view.failure?.canRetry).toBe(true);
   });
 });
+
+function failedSttWith(reason: string): PipelineState {
+  return transition(
+    transition(transition(INITIAL_PIPELINE_STATE, { type: 'RecordStarted' }), {
+      type: 'RecordStopped',
+      clipId: 'c',
+    }),
+    { type: 'TranscribeErr', reason },
+  );
+}

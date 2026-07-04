@@ -33,7 +33,8 @@ export function CorrectionSession() {
     }
   }, [appCtx.runner, recorder, view.isRecording]);
 
-  const egressRefused = view.failure?.reason.includes('egress refused') ?? false;
+  const egressRefused = view.failure?.cause === 'egress-refused';
+  const undecodableAudio = view.failure?.cause === 'undecodable-audio';
   const readyCorrections =
     appCtx.state.phase === 'READY' ? appCtx.state.correction.corrections : [];
   const correctionTier =
@@ -101,12 +102,31 @@ export function CorrectionSession() {
               réessaie.
             </p>
           ) : null}
+          {undecodableAudio ? (
+            <p>
+              Le micro n&apos;a rien capté d&apos;exploitable (périphérique muet ou
+              déconnecté&nbsp;?). Vérifie ton micro puis ré-enregistre — réessayer sur cet
+              enregistrement échouerait à l&apos;identique.
+            </p>
+          ) : null}
           <p>
-            <button type="button" className="primary" onClick={() => void appCtx.runner.retry()}>
-              Réessayer
-            </button>{' '}
-            <button type="button" onClick={() => appCtx.runner.abort()}>
-              Abandonner
+            {view.failure.canRetry ? (
+              <>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() => void appCtx.runner.retry()}
+                >
+                  Réessayer
+                </button>{' '}
+              </>
+            ) : null}
+            <button
+              type="button"
+              className={view.failure.canRetry ? undefined : 'primary'}
+              onClick={() => appCtx.runner.abort()}
+            >
+              {view.failure.canRetry ? 'Abandonner' : 'Ré-enregistrer'}
             </button>
           </p>
         </section>

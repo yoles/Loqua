@@ -33,7 +33,15 @@ export async function decodeToPcm16k(clip: AudioClip): Promise<Float32Array> {
 
   const sampleCount = Math.ceil((clip.durationMs / 1000) * TARGET_SAMPLE_RATE);
   const context = new OfflineAudioContext(1, Math.max(sampleCount, 1), TARGET_SAMPLE_RATE);
-  const buffer = await context.decodeAudioData(clip.data.slice(0));
+  let buffer: AudioBuffer;
+  try {
+    buffer = await context.decodeAudioData(clip.data.slice(0));
+  } catch (error: unknown) {
+    // Capture vide/corrompue (micro muet, périphérique fantôme) : marqueur stable,
+    // même clip = même échec — le retry est inutile, l'UI doit le savoir.
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`audio-decode-failed: ${detail}`);
+  }
   const mono = buffer.getChannelData(0);
   return resampleLinear(mono, buffer.sampleRate, TARGET_SAMPLE_RATE);
 }
