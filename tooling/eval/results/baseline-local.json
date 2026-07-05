@@ -1,0 +1,169 @@
+{
+  "ranAt": "2026-07-05T18:26:44.599Z",
+  "subject": "local (Qwen3-8B via sidecar)",
+  "durationMs": 1353270,
+  "total": 60,
+  "passed": 23,
+  "invalidOutputs": 6,
+  "subjectErrors": 2,
+  "detectionRateByType": {
+    "tense": 0.5714285714285714,
+    "grammar": 0.65625,
+    "vocabulary": 0.2727272727272727,
+    "idiom": 0,
+    "syntax": 0,
+    "word-order": 0.25,
+    "article": 0.3333333333333333
+  },
+  "judge": [],
+  "failedCases": [
+    {
+      "id": "standup-01",
+      "outcome": "invalid-output"
+    },
+    {
+      "id": "standup-04",
+      "outcome": "invalid-output"
+    },
+    {
+      "id": "standup-05",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-07",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-08",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-09",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "standup-10",
+      "outcome": "subject-error"
+    },
+    {
+      "id": "review-01",
+      "outcome": "subject-error"
+    },
+    {
+      "id": "review-02",
+      "outcome": "invalid-output"
+    },
+    {
+      "id": "review-04",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-07",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-09",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "review-12",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-01",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-02",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-07",
+      "outcome": "invalid-output"
+    },
+    {
+      "id": "incident-08",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-10",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "incident-11",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-02",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-03",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-04",
+      "outcome": "invalid-output"
+    },
+    {
+      "id": "interview-05",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-09",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-10",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "interview-12",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-02",
+      "outcome": "invalid-output"
+    },
+    {
+      "id": "archi-05",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-06",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-07",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-09",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-11",
+      "outcome": "missed-detections"
+    },
+    {
+      "id": "archi-12",
+      "outcome": "missed-detections"
+    }
+  ]
+}

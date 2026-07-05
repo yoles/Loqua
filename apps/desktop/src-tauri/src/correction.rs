@@ -197,7 +197,7 @@ pub fn correct(
 
     let started = Instant::now();
     let output = run_sidecar(&sidecar, &request)?;
-    println!("llm done: model={model_id} elapsed_s={:.1}", started.elapsed().as_secs_f64());
+    eprintln!("llm done: model={model_id} elapsed_s={:.1}", started.elapsed().as_secs_f64());
 
     extract_json_object(&output)
         .map(str::to_owned)
