@@ -1,4 +1,5 @@
 mod clips;
+mod correction;
 mod models;
 mod storage;
 mod stt;
@@ -9,6 +10,7 @@ use std::path::PathBuf;
 use tauri::ipc::{Channel, InvokeBody, Request};
 use tauri::Manager;
 
+use correction::LlmError;
 use storage::{StorageError, StorageState};
 use stt::{SttError, SttState};
 
@@ -124,6 +126,21 @@ async fn stt_transcribe(
     .map_err(|e| SttError::Inference(e.to_string()))?
 }
 
+#[tauri::command]
+async fn llm_correct(
+    app: tauri::AppHandle,
+    text: String,
+    variant: String,
+    model_id: String,
+) -> Result<String, LlmError> {
+    let dir = app_data_dir(&app).map_err(|_| LlmError::InvalidInput("no app data dir"))?;
+    tauri::async_runtime::spawn_blocking(move || {
+        correction::correct(&dir, &text, &variant, &model_id)
+    })
+    .await
+    .map_err(|e| LlmError::Inference(e.to_string()))?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -143,7 +160,8 @@ pub fn run() {
             model_download,
             model_evict,
             store_clip,
-            stt_transcribe
+            stt_transcribe,
+            llm_correct
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

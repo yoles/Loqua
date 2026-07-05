@@ -6,6 +6,10 @@ export {
   type TauriInvokeOptions,
 } from './ipc/tauri-invoke.ts';
 export {
+  createTauriCorrectionPort,
+  NATIVE_CORRECTION_MODEL_ID,
+} from './correction/tauri-correction-port.ts';
+export {
   createTauriModelRuntime,
   TAURI_MODEL_REGISTRY,
 } from './models/tauri-model-runtime.ts';

@@ -13,6 +13,12 @@ export const TAURI_MODEL_REGISTRY: readonly ModelDescriptor[] = [
     sizeBytes: 147_964_211,
     checksum: 'sha256:a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002',
   },
+  {
+    id: 'qwen3-8b-correction',
+    task: 'llm',
+    sizeBytes: 5_027_783_488,
+    checksum: 'sha256:d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785',
+  },
 ];
 
 const isReadySchema = z.boolean();

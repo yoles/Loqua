@@ -28,3 +28,9 @@ sha2 = "0.10"
 
 [profile.release]
 strip = true
+
+# LLM local = binaire séparé (lot 4.3) : whisper-rs et llama-cpp-2 embarquent
+# chacun leur ggml et ne peuvent pas être linkés dans le même binaire. Le
+# sidecar est un process enfant (invariant #1 : aucun réseau ; §15 : IPC validé).
+[workspace]
+members = ["llm-sidecar"]

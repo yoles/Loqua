@@ -16,12 +16,20 @@ pub struct ModelEntry {
     pub size_bytes: u64,
 }
 
-pub const MODEL_REGISTRY: &[ModelEntry] = &[ModelEntry {
-    id: "whisper-base-en",
-    url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin",
-    sha256: "a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002",
-    size_bytes: 147_964_211,
-}];
+pub const MODEL_REGISTRY: &[ModelEntry] = &[
+    ModelEntry {
+        id: "whisper-base-en",
+        url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin",
+        sha256: "a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002",
+        size_bytes: 147_964_211,
+    },
+    ModelEntry {
+        id: "qwen3-8b-correction",
+        url: "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf",
+        sha256: "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+        size_bytes: 5_027_783_488,
+    },
+];
 
 const DOWNLOAD_CHUNK_BYTES: usize = 1024 * 1024;
 

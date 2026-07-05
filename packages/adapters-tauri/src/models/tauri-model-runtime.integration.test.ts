@@ -15,7 +15,11 @@ describe('Tauri model runtime adapter honours the ModelRuntimePort contract', ()
     const invoke: TauriInvoke = () => Promise.reject(new Error('list never touches IPC'));
     const runtime = createTauriModelRuntime({ invoke });
 
-    expect(runtime.list()).toEqual([descriptor]);
+    const listed = runtime.list();
+    expect(listed).toContainEqual(descriptor);
+    expect(listed.some((entry) => entry.id === 'qwen3-8b-correction' && entry.task === 'llm')).toBe(
+      true,
+    );
   });
 
   it('reports readiness from the native side', async () => {
