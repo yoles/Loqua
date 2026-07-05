@@ -40,12 +40,13 @@ import {
   decodeToPcm16k,
 } from '@loqua/adapters-web';
 import {
+  createTauriCorrectionPort,
   createTauriModelRuntime,
   createTauriTranscriptionPort,
   isTauriRuntime,
   tauriInvoke,
 } from '@loqua/adapters-tauri';
-import type { TranscriptionPort } from '@loqua/core';
+import type { CorrectionPort, TranscriptionPort } from '@loqua/core';
 import type { SessionRecord } from '@/entities/session/record';
 
 const CORRECTION_ENDPOINT =
@@ -81,6 +82,20 @@ const systemClock: ClockPort = {
   now: () => Date.now(),
   timezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
 };
+
+// Desktop : correction LOCALE par défaut (100 % local, positionnement) ; le cloud
+// reste un opt-in EXPLICITE (invariant #5, jamais silencieux). Routage au
+// composition root — le core ne reçoit qu'un seul CorrectionPort.
+function routeCorrection(
+  local: CorrectionPort,
+  cloud: CorrectionPort,
+  useCloud: () => boolean,
+): CorrectionPort {
+  return {
+    capability: () => (useCloud() ? cloud : local).capability(),
+    correct: (input) => (useCloud() ? cloud : local).correct(input),
+  };
+}
 
 export interface CorrectionApp {
   readonly state: PipelineState;
@@ -119,24 +134,38 @@ function useCorrectionAppInternal(): CorrectionApp {
     const onDownloadProgress = (ratio: number): void => {
       setDownloadProgress(ratio >= 1 ? null : ratio);
     };
-    // Desktop : STT natif whisper.cpp (audio par fichier local) ; web : WASM/WebGPU.
-    const transcription: TranscriptionPort = isTauriRuntime()
-      ? createTauriTranscriptionPort({
-          invoke: tauriInvoke,
-          modelRuntime: createTauriModelRuntime({ invoke: tauriInvoke }),
-          decodeToPcm16k,
-          onDownloadProgress,
-        })
-      : createWhisperTranscriptionPort({
-          engineFactory: createTransformersAsrEngineFactory(),
-          onDownloadProgress,
-        });
-
-    const correction = createCloudCorrectionPort({
+    const cloudCorrection = createCloudCorrectionPort({
       endpoint: CORRECTION_ENDPOINT,
       guard,
       cloudOptIn: () => cloudOptInRef.current,
     });
+
+    // Même frontend web↔desktop : seuls les adapters injectés changent (Spike #3).
+    let transcription: TranscriptionPort;
+    let correction: CorrectionPort;
+    if (isTauriRuntime()) {
+      // Desktop : STT + correction natifs (audio ET texte restent sur l'appareil).
+      const modelRuntime = createTauriModelRuntime({ invoke: tauriInvoke });
+      transcription = createTauriTranscriptionPort({
+        invoke: tauriInvoke,
+        modelRuntime,
+        decodeToPcm16k,
+        onDownloadProgress,
+      });
+      const localCorrection = createTauriCorrectionPort({
+        invoke: tauriInvoke,
+        modelRuntime,
+        onDownloadProgress,
+      });
+      correction = routeCorrection(localCorrection, cloudCorrection, () => cloudOptInRef.current);
+    } else {
+      // Web « lite » : STT local WASM/WebGPU ; correction = cloud-ZDR opt-in.
+      transcription = createWhisperTranscriptionPort({
+        engineFactory: createTransformersAsrEngineFactory(),
+        onDownloadProgress,
+      });
+      correction = cloudCorrection;
+    }
 
     const runner = createPipelineRunner({
       transcription,

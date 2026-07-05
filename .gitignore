@@ -14,6 +14,7 @@ apps/web/public/sqlite-wasm/
 .wrangler/
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/
+apps/desktop/src-tauri/binaries/
 
 # secrets — jamais committés
 .env*

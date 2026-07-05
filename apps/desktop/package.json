@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tauri dev",
-    "bundle": "tauri build",
+    "dev": "node scripts/build-sidecar.mjs && tauri dev",
+    "bundle": "node scripts/build-sidecar.mjs --release && tauri build",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
