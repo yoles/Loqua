@@ -58,11 +58,19 @@ export function createCloudCorrectionPort(options: CloudCorrectionOptions): Corr
       }
 
       // Seuls le texte et la variante partent — jamais d'audio, jamais d'extra.
-      const response = await fetchFn(options.endpoint, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ text: input.text, variant: input.variant }),
-      });
+      let response: Response;
+      try {
+        response = await fetchFn(options.endpoint, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ text: input.text, variant: input.variant }),
+        });
+      } catch (error: unknown) {
+        // Rejet réseau (serveur injoignable, hors ligne) : traduit en erreur de
+        // domaine, jamais un TypeError brut (« Load failed ») remonté au core.
+        const detail = error instanceof Error ? error.message : String(error);
+        throw new CorrectionError(`correction service unreachable: ${detail}`);
+      }
       if (!response.ok) {
         throw new CorrectionError(`correction service failed with status ${response.status}`);
       }

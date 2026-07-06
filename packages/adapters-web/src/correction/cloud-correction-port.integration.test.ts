@@ -126,6 +126,20 @@ describe('cloud correction adapter (provider always mocked)', () => {
     await expect(port.correct({ text: 'hello', variant: 'en-US' })).rejects.toThrow(/502/);
   });
 
+  it('translates a network rejection into a domain error, never a raw fetch error', async () => {
+    const fetchFn = vi.fn().mockRejectedValue(new TypeError('Load failed'));
+    const port = createCloudCorrectionPort({
+      endpoint: ENDPOINT,
+      guard: guardWith(true),
+      cloudOptIn: () => true,
+      fetchFn,
+    });
+
+    const rejection = port.correct({ text: 'hello', variant: 'en-US' });
+    await expect(rejection).rejects.toThrow(CorrectionError);
+    await expect(rejection).rejects.toThrow(/unreachable/);
+  });
+
   it('memoizes on transcript + variant — the same text is corrected once', async () => {
     const fetchFn = vi.fn().mockImplementation(() => Promise.resolve(okReply(validPayload)));
     const port = createCloudCorrectionPort({
