@@ -127,6 +127,13 @@
 | **5.2 Tap-sur-mot** | Panneau mot : lecture isolée, mode boucle (N s réglable), vitesse 0,5×/0,75×/1×, IPA + syllabes (PRD §5). | Le flux « je bute sur *interesting* → je boucle dessus » marche. |
 | **5.3 Enregistre-toi & compare** | `ear-compare` via `PronunciationScoringPort` → `UnscoredComparison` : lecture A/B référence/toi, waveform simple. **Pas de score chiffré** (Spike #2 NO-GO) — ne pas en afficher un. | Comparaison A/B fluide ; mots pratiqués alimentent le SRS. |
 
+**État (2026-07-06) — côté web livré, natif desktop différé :**
+- 5.1 TTS web (`SpeechSynthesisPort` kokoro.js + repli WebSpeech, bouton écouter) — commit `531e73f`.
+- 5.2 tap-sur-mot (`PhonemizerPort` IPA eSpeak + `syllabify` core + panneau lecture/vitesse/boucle) — commit `f2769db`.
+- 5.3 ear-compare (A/B référence/toi + waveform, `UnscoredComparison`, carte SRS mot) — commit `6a8b2d1`.
+- **Écart assumé** : **Kokoro natif desktop** (sidecar Rust + modèle) non fait — différé (gros morceau infra, comme le LLM). Sur desktop, le TTS/phonémisation replient sur WebSpeech (visible, invariant #5). À reprendre avec le natif desktop.
+- **À vérifier en vrai** (non automatisable ici) : latence TTS ≤ 2 s/phrase (jalon 5.1) en navigateur.
+
 **Done Sprint 5 :** l'itération 3 du PRD est livrée. Le produit couvre toute la boucle §4 du PRD (sauf scoring chiffré, écarté).
 
 ---
