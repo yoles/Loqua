@@ -145,6 +145,22 @@ describe('Tauri local correction adapter honours the CorrectionPort contract', (
     );
   });
 
+  it('repairs a recoverable malformed payload (unquoted enum + trailing comma)', async () => {
+    const repairable = fakeNativeLlm(
+      '{"correctedText":"I deployed it","corrections":[{"original":"I have deploy","fixed":"I deployed","type": tense,"explanation":"Simple past for a finished action."},]}',
+    );
+    const port = createTauriCorrectionPort({
+      invoke: repairable.invoke,
+      modelRuntime: readyModelRuntime(),
+    });
+
+    const result = await port.correct({ text: 'I have deploy it', variant: 'en-US' });
+
+    expect(result.correctedText).toBe('I deployed it');
+    expect(result.corrections[0]?.type).toBe('tense');
+    expect(result.qualityTier).toBe('local-strong');
+  });
+
   it('maps a schema-invalid payload (bad error type) to a domain error', async () => {
     const badType = fakeNativeLlm(
       JSON.stringify({

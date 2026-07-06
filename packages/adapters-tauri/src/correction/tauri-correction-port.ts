@@ -1,4 +1,5 @@
 import { localCorrectionPayloadSchema } from './correction-schema.ts';
+import { repairModelJson } from './repair-model-json.ts';
 import {
   CorrectionError,
   makeCorrection,
@@ -30,6 +31,21 @@ function transcriptKey(text: string, variant: Variant): string {
   return `${variant}:${hash >>> 0}`;
 }
 
+// Parse tolérant : JSON valide d'abord ; sinon réparation ciblée des
+// malformations du modèle local puis nouvelle tentative. Le JSON valide n'est
+// jamais transformé (risque nul sur les cas sains).
+function parseLenient(rawJson: string): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(rawJson) };
+  } catch {
+    try {
+      return { ok: true, value: JSON.parse(repairModelJson(rawJson)) };
+    } catch {
+      return { ok: false };
+    }
+  }
+}
+
 interface TauriCorrectionOptions {
   readonly invoke: TauriInvoke;
   readonly modelRuntime: ModelRuntimePort;
@@ -50,13 +66,11 @@ export function createTauriCorrectionPort(options: TauriCorrectionOptions): Corr
   }
 
   function toResult(variant: Variant, rawJson: string): CorrectionResult {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(rawJson);
-    } catch {
+    const parsed = parseLenient(rawJson);
+    if (!parsed.ok) {
       throw new CorrectionError('malformed local correction payload (invalid JSON)');
     }
-    const validated = localCorrectionPayloadSchema.safeParse(parsed);
+    const validated = localCorrectionPayloadSchema.safeParse(parsed.value);
     if (!validated.success) {
       throw new CorrectionError('malformed local correction payload (schema)');
     }
