@@ -15,6 +15,13 @@ export const WEB_MODEL_REGISTRY: readonly WebModelEntry[] = [
     checksum: 'hf:onnx-community/whisper-base.en@main',
     hubId: 'onnx-community/whisper-base.en',
   },
+  {
+    id: 'tts-kokoro-82m',
+    task: 'tts',
+    sizeBytes: 90_000_000, // q8 (WASM) ; fp32 WebGPU ≈ 326 Mo
+    checksum: 'hf:onnx-community/Kokoro-82M-v1.0-ONNX@main',
+    hubId: 'onnx-community/Kokoro-82M-v1.0-ONNX',
+  },
 ];
 
 export function findModel(modelId: string): WebModelEntry | null {

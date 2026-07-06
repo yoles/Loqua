@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { useCorrectionApp } from '@/composition-root';
 import { ConsentGate } from '@/features/consent/ConsentGate';
 import { CorrectionDiff } from '@/features/correction-diff/CorrectionDiff';
+import { ReadAloudButton } from '@/features/read-aloud/ReadAloudButton';
 import { SessionHistory } from '@/features/history/SessionHistory';
 import { StorageControls } from '@/features/settings/StorageControls';
 import { useRecorder } from '@/features/recording/useRecorder';
@@ -39,6 +40,8 @@ export function CorrectionSession() {
     appCtx.state.phase === 'READY' ? appCtx.state.correction.corrections : [];
   const correctionTier =
     appCtx.state.phase === 'READY' ? appCtx.state.correction.qualityTier : null;
+  const readyVariant =
+    appCtx.state.phase === 'READY' ? appCtx.state.correction.variant : 'en-US';
 
   return (
     <ConsentGate
@@ -134,11 +137,18 @@ export function CorrectionSession() {
       ) : null}
 
       {view.diff !== null ? (
-        <CorrectionDiff
-          originalText={view.diff.originalText}
-          correctedText={view.diff.correctedText}
-          corrections={readyCorrections}
-        />
+        <>
+          <CorrectionDiff
+            originalText={view.diff.originalText}
+            correctedText={view.diff.correctedText}
+            corrections={readyCorrections}
+          />
+          <ReadAloudButton
+            port={appCtx.speechSynthesis}
+            text={view.diff.correctedText}
+            variant={readyVariant}
+          />
+        </>
       ) : null}
 
       <SessionHistory sessions={appCtx.sessions} />

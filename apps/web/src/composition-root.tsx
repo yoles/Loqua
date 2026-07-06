@@ -34,6 +34,8 @@ import {
 } from '@loqua/core';
 import {
   createCloudCorrectionPort,
+  createKokoroSpeechSynthesisPort,
+  createKokoroTtsEngineFactory,
   createSqliteStoragePort,
   createTransformersAsrEngineFactory,
   createWhisperTranscriptionPort,
@@ -46,7 +48,7 @@ import {
   isTauriRuntime,
   tauriInvoke,
 } from '@loqua/adapters-tauri';
-import type { CorrectionPort, TranscriptionPort } from '@loqua/core';
+import type { CorrectionPort, SpeechSynthesisPort, TranscriptionPort } from '@loqua/core';
 import type { SessionRecord } from '@/entities/session/record';
 
 const CORRECTION_ENDPOINT =
@@ -100,6 +102,7 @@ function routeCorrection(
 export interface CorrectionApp {
   readonly state: PipelineState;
   readonly runner: PipelineRunner;
+  readonly speechSynthesis: SpeechSynthesisPort | null; // null = TTS local indispo (repli WebSpeech)
   readonly downloadProgress: number | null; // 0..1 pendant le download du modèle STT
   readonly sttTier: string;
   readonly microphoneConsent: boolean;
@@ -167,6 +170,15 @@ function useCorrectionAppInternal(): CorrectionApp {
       correction = cloudCorrection;
     }
 
+    // TTS local (lot 5.1) : web = kokoro.js. Desktop natif = incrément suivant ;
+    // en attendant le port est null et le feature read-aloud replie sur WebSpeech.
+    const speechSynthesis: SpeechSynthesisPort | null = isTauriRuntime()
+      ? null
+      : createKokoroSpeechSynthesisPort({
+          engineFactory: createKokoroTtsEngineFactory(),
+          onDownloadProgress,
+        });
+
     const runner = createPipelineRunner({
       transcription,
       correction,
@@ -192,7 +204,7 @@ function useCorrectionAppInternal(): CorrectionApp {
       await storageRef.current?.put('sessions', record.id, record);
     }
 
-    return { bus, runner, transcription };
+    return { bus, runner, transcription, speechSynthesis };
   }, []);
 
   // Stockage : sqlite-wasm chargé hors bundler, OPFS si dispo — état TOUJOURS visible.
@@ -287,6 +299,7 @@ function useCorrectionAppInternal(): CorrectionApp {
   return {
     state,
     runner: app.runner,
+    speechSynthesis: app.speechSynthesis,
     downloadProgress,
     sttTier: app.transcription.capability().qualityTier,
     microphoneConsent,

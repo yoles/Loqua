@@ -14,6 +14,9 @@ export type {
 export { decodeToPcm16k, resampleLinear } from './stt/audio-decode.ts';
 export { createTransformersAsrEngineFactory } from './stt/transformers-asr-engine.ts';
 export { createWhisperTranscriptionPort } from './stt/whisper-transcription-port.ts';
+export { createKokoroSpeechSynthesisPort } from './tts/kokoro-speech-synthesis-port.ts';
+export { createKokoroTtsEngineFactory } from './tts/kokoro-tts-engine.ts';
+export type { TtsDevice, TtsEngine, TtsEngineFactory, TtsOutput } from './tts/tts-engine.ts';
 // NB : openWorkerSqliteDatabase (worker sqlite-wasm/OPFS) est exposé via le
 // sous-export '@loqua/adapters-web/sqlite' — à ne tirer que là où on l'utilise.
 export {
