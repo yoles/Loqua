@@ -132,7 +132,7 @@
 - 5.2 tap-sur-mot (`PhonemizerPort` IPA eSpeak + `syllabify` core + panneau lecture/vitesse/boucle) — commit `f2769db`.
 - 5.3 ear-compare (A/B référence/toi + waveform, `UnscoredComparison`, carte SRS mot) — commit `6a8b2d1`.
 - **Écart assumé** : **Kokoro natif desktop** (sidecar Rust + modèle) non fait — différé (gros morceau infra, comme le LLM). Sur desktop, le TTS/phonémisation replient sur WebSpeech (visible, invariant #5). À reprendre avec le natif desktop.
-- **À vérifier en vrai** (non automatisable ici) : latence TTS ≤ 2 s/phrase (jalon 5.1) en navigateur.
+- **Vérifié en vrai (2026-07-06)** par l'utilisateur en navigateur : boucle complète OK — TTS (latence ≤ 2 s, jalon 5.1), tap-sur-mot (IPA/syllabes/vitesse/boucle), enregistre-compare A/B + waveform, et mots pratiqués remontant dans le deck SRS.
 
 **Done Sprint 5 :** l'itération 3 du PRD est livrée. Le produit couvre toute la boucle §4 du PRD (sauf scoring chiffré, écarté).
 
