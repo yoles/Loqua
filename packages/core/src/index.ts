@@ -31,6 +31,10 @@ export {
 export { PronunciationError } from './contexts/pronunciation/errors.ts';
 export { makeWord, type Word } from './contexts/pronunciation/word.ts';
 export { syllabify } from './contexts/pronunciation/syllable.ts';
+export {
+  attachPronunciationCardCreation,
+  type PronunciationCardPolicy,
+} from './contexts/srs/pronunciation-card-policy.ts';
 
 // srs
 export { makeCard, reviewCard, type Card, type ReviewItem } from './contexts/srs/card.ts';

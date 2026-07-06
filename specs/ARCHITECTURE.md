@@ -266,7 +266,8 @@ export interface UnscoredComparison {
 }
 export interface PronunciationScoringPort {
   capability(): RuntimeCapability;
-  score(input: { audio: AudioClip; targetWord: string; ipa?: string }):
+  // `reference` (TTS) : chemin unscored ear-compare (A/B, lot 5.3). Scored futur : audio vs targetWord/ipa.
+  score(input: { audio: AudioClip; targetWord: string; reference?: AudioClip; ipa?: string }):
     Promise<ScoreResult | UnscoredComparison>;
 }
 

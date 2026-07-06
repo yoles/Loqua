@@ -158,6 +158,8 @@ export function CorrectionSession() {
               variant={readyVariant}
               speech={appCtx.speechSynthesis}
               phonemizer={appCtx.phonemizer}
+              scoring={appCtx.scoring}
+              onPracticed={appCtx.practiceWord}
               onClose={() => setSelectedWord(null)}
             />
           ) : null}

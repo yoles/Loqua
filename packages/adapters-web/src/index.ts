@@ -4,6 +4,7 @@ export {
   type CorrectionPayload,
 } from './correction/correction-schema.ts';
 export { WEB_MODEL_REGISTRY, findModel, type WebModelEntry } from './models/registry.ts';
+export { createEarCompareScoringPort } from './pronunciation/ear-compare-scoring-port.ts';
 export { createWebModelRuntime, type ModelLoader } from './models/web-model-runtime.ts';
 export type {
   AsrDevice,

@@ -1,13 +1,22 @@
 'use client';
 
 import { useWordPractice, type PlaybackRate } from './useWordPractice';
-import type { PhonemizerPort, SpeechSynthesisPort, Variant } from '@loqua/core';
+import { useEarCompare } from './useEarCompare';
+import { Waveform } from './Waveform';
+import type {
+  PhonemizerPort,
+  PronunciationScoringPort,
+  SpeechSynthesisPort,
+  Variant,
+} from '@loqua/core';
 
 interface WordPanelProps {
   readonly word: string;
   readonly variant: Variant;
   readonly speech: SpeechSynthesisPort | null;
   readonly phonemizer: PhonemizerPort | null;
+  readonly scoring: PronunciationScoringPort;
+  onPracticed(word: string): void;
   onClose(): void;
 }
 
@@ -17,8 +26,17 @@ const MAX_LOOP_SECONDS = 10;
 
 // Panneau mot (dumb-ish) : IPA + syllabes + lecture isolée, vitesse, boucle.
 // Le flux « je bute sur un mot → je boucle dessus » (lot 5.2, PRD §5).
-export function WordPanel({ word, variant, speech, phonemizer, onClose }: WordPanelProps) {
+export function WordPanel({
+  word,
+  variant,
+  speech,
+  phonemizer,
+  scoring,
+  onPracticed,
+  onClose,
+}: WordPanelProps) {
   const practice = useWordPractice(word, variant, speech, phonemizer);
+  const compare = useEarCompare(word, variant, speech, scoring, onPracticed);
 
   return (
     <section className="panel word-panel" aria-label={`Prononciation de ${word}`}>
@@ -74,6 +92,40 @@ export function WordPanel({ word, variant, speech, phonemizer, onClose }: WordPa
           />{' '}
           s
         </label>
+      </div>
+
+      <div className="ear-compare">
+        <h4>Enregistre-toi et compare</h4>
+        {compare.status === 'recording' ? (
+          <button type="button" onClick={() => void compare.stopRecording()}>
+            ■ Terminer
+          </button>
+        ) : (
+          <button type="button" onClick={() => void compare.startRecording()}>
+            🎙️ M&apos;enregistrer
+          </button>
+        )}
+
+        {compare.status === 'unavailable' ? (
+          <p role="alert">Référence vocale indisponible — comparaison A/B impossible ici.</p>
+        ) : null}
+
+        {compare.hasUserClip ? (
+          <div className="ab-compare">
+            <div>
+              <button type="button" onClick={() => void compare.playReference()}>
+                ▶ Référence
+              </button>
+              <Waveform bars={compare.referenceBars} label="référence" />
+            </div>
+            <div>
+              <button type="button" onClick={() => void compare.playUser()}>
+                ▶ Toi
+              </button>
+              <Waveform bars={compare.userBars} label="toi" />
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -17,6 +17,7 @@ import {
 import {
   attachErrorCardCreation,
   attachGamification,
+  attachPronunciationCardCreation,
   createEgressGuard,
   createEventBus,
   createPipelineRunner,
@@ -34,6 +35,7 @@ import {
 } from '@loqua/core';
 import {
   createCloudCorrectionPort,
+  createEarCompareScoringPort,
   createKokoroPhonemizerPort,
   createKokoroSpeechSynthesisPort,
   createKokoroTtsEngineFactory,
@@ -52,6 +54,7 @@ import {
 import type {
   CorrectionPort,
   PhonemizerPort,
+  PronunciationScoringPort,
   SpeechSynthesisPort,
   TranscriptionPort,
 } from '@loqua/core';
@@ -110,6 +113,7 @@ export interface CorrectionApp {
   readonly runner: PipelineRunner;
   readonly speechSynthesis: SpeechSynthesisPort | null; // null = TTS local indispo (repli WebSpeech)
   readonly phonemizer: PhonemizerPort | null; // null = phonémisation indispo (desktop en attendant)
+  readonly scoring: PronunciationScoringPort; // ear-compare (unscored, Spike #2)
   readonly downloadProgress: number | null; // 0..1 pendant le download du modèle STT
   readonly sttTier: string;
   readonly microphoneConsent: boolean;
@@ -121,6 +125,7 @@ export interface CorrectionApp {
   readonly gamification: GamificationState | null;
   grantMicrophone(): void;
   setCloudCorrection(enabled: boolean): void;
+  practiceWord(word: string): void; // mot pratiqué → carte SRS (lot 5.3)
   eraseAll(): Promise<void>;
 }
 
@@ -189,6 +194,8 @@ function useCorrectionAppInternal(): CorrectionApp {
     const phonemizer: PhonemizerPort | null = isTauriRuntime()
       ? null
       : createKokoroPhonemizerPort();
+    // ear-compare (lot 5.3) : adapter pur (pas de score, Spike #2), toutes plateformes.
+    const scoring: PronunciationScoringPort = createEarCompareScoringPort();
 
     const runner = createPipelineRunner({
       transcription,
@@ -215,7 +222,7 @@ function useCorrectionAppInternal(): CorrectionApp {
       await storageRef.current?.put('sessions', record.id, record);
     }
 
-    return { bus, runner, transcription, speechSynthesis, phonemizer };
+    return { bus, runner, transcription, speechSynthesis, phonemizer, scoring };
   }, []);
 
   // Stockage : sqlite-wasm chargé hors bundler, OPFS si dispo — état TOUJOURS visible.
@@ -234,8 +241,9 @@ function useCorrectionAppInternal(): CorrectionApp {
         setStoragePersistent(opened.persistent);
 
         const errorCards = attachErrorCardCreation(app.bus, { storage, clock: systemClock });
+        const wordCards = attachPronunciationCardCreation(app.bus, { storage, clock: systemClock });
         const gamificationPolicy = attachGamification(app.bus, { storage, clock: systemClock });
-        detachers.push(errorCards.detach, gamificationPolicy.detach);
+        detachers.push(errorCards.detach, wordCards.detach, gamificationPolicy.detach);
         setReview(createReviewDeck({ storage, clock: systemClock, events: app.bus }));
 
         const reloadGamification = async (): Promise<void> => {
@@ -246,13 +254,14 @@ function useCorrectionAppInternal(): CorrectionApp {
           }
         };
         const reloadCards = async (): Promise<void> => {
-          await errorCards.settled();
+          await Promise.all([errorCards.settled(), wordCards.settled()]);
           if (!cancelled) {
             setCardsVersion((version) => version + 1);
           }
         };
         detachers.push(
           app.bus.subscribe('ErrorDetected', () => void reloadCards()),
+          app.bus.subscribe('PronunciationValidated', () => void reloadCards()),
           app.bus.subscribe('SessionCompleted', () => void reloadGamification()),
           app.bus.subscribe('CardReviewed', () => void reloadGamification()),
         );
@@ -307,11 +316,19 @@ function useCorrectionAppInternal(): CorrectionApp {
     [publishConsent],
   );
 
+  const practiceWord = useCallback(
+    (word: string) => {
+      app.bus.publish({ kind: 'PronunciationValidated', word });
+    },
+    [app.bus],
+  );
+
   return {
     state,
     runner: app.runner,
     speechSynthesis: app.speechSynthesis,
     phonemizer: app.phonemizer,
+    scoring: app.scoring,
     downloadProgress,
     sttTier: app.transcription.capability().qualityTier,
     microphoneConsent,
@@ -323,6 +340,7 @@ function useCorrectionAppInternal(): CorrectionApp {
     gamification,
     grantMicrophone,
     setCloudCorrection,
+    practiceWord,
     eraseAll,
   };
 }
