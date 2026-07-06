@@ -30,6 +30,7 @@ export {
 } from './contexts/pronunciation/comparison.ts';
 export { PronunciationError } from './contexts/pronunciation/errors.ts';
 export { makeWord, type Word } from './contexts/pronunciation/word.ts';
+export { syllabify } from './contexts/pronunciation/syllable.ts';
 
 // srs
 export { makeCard, reviewCard, type Card, type ReviewItem } from './contexts/srs/card.ts';
@@ -128,6 +129,7 @@ export type {
 export type { PronunciationScoringPort } from './ports/pronunciation-scoring-port.ts';
 export type { QualityTier, RuntimeCapability } from './ports/runtime-capability.ts';
 export type { SpeechSynthesisPort } from './ports/speech-synthesis-port.ts';
+export type { PhonemizerPort } from './ports/phonemizer-port.ts';
 export type { StoragePort } from './ports/storage-port.ts';
 export type {
   TranscriptionPort,

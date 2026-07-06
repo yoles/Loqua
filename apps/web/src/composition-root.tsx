@@ -34,6 +34,7 @@ import {
 } from '@loqua/core';
 import {
   createCloudCorrectionPort,
+  createKokoroPhonemizerPort,
   createKokoroSpeechSynthesisPort,
   createKokoroTtsEngineFactory,
   createSqliteStoragePort,
@@ -48,7 +49,12 @@ import {
   isTauriRuntime,
   tauriInvoke,
 } from '@loqua/adapters-tauri';
-import type { CorrectionPort, SpeechSynthesisPort, TranscriptionPort } from '@loqua/core';
+import type {
+  CorrectionPort,
+  PhonemizerPort,
+  SpeechSynthesisPort,
+  TranscriptionPort,
+} from '@loqua/core';
 import type { SessionRecord } from '@/entities/session/record';
 
 const CORRECTION_ENDPOINT =
@@ -103,6 +109,7 @@ export interface CorrectionApp {
   readonly state: PipelineState;
   readonly runner: PipelineRunner;
   readonly speechSynthesis: SpeechSynthesisPort | null; // null = TTS local indispo (repli WebSpeech)
+  readonly phonemizer: PhonemizerPort | null; // null = phonémisation indispo (desktop en attendant)
   readonly downloadProgress: number | null; // 0..1 pendant le download du modèle STT
   readonly sttTier: string;
   readonly microphoneConsent: boolean;
@@ -178,6 +185,10 @@ function useCorrectionAppInternal(): CorrectionApp {
           engineFactory: createKokoroTtsEngineFactory(),
           onDownloadProgress,
         });
+    // Phonémisation IPA (lot 5.2) : web = kokoro-js/eSpeak ; desktop natif à venir.
+    const phonemizer: PhonemizerPort | null = isTauriRuntime()
+      ? null
+      : createKokoroPhonemizerPort();
 
     const runner = createPipelineRunner({
       transcription,
@@ -204,7 +215,7 @@ function useCorrectionAppInternal(): CorrectionApp {
       await storageRef.current?.put('sessions', record.id, record);
     }
 
-    return { bus, runner, transcription, speechSynthesis };
+    return { bus, runner, transcription, speechSynthesis, phonemizer };
   }, []);
 
   // Stockage : sqlite-wasm chargé hors bundler, OPFS si dispo — état TOUJOURS visible.
@@ -300,6 +311,7 @@ function useCorrectionAppInternal(): CorrectionApp {
     state,
     runner: app.runner,
     speechSynthesis: app.speechSynthesis,
+    phonemizer: app.phonemizer,
     downloadProgress,
     sttTier: app.transcription.capability().qualityTier,
     microphoneConsent,

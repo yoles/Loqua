@@ -14,6 +14,7 @@ export type {
 export { decodeToPcm16k, resampleLinear } from './stt/audio-decode.ts';
 export { createTransformersAsrEngineFactory } from './stt/transformers-asr-engine.ts';
 export { createWhisperTranscriptionPort } from './stt/whisper-transcription-port.ts';
+export { createKokoroPhonemizerPort } from './tts/kokoro-phonemizer-port.ts';
 export { createKokoroSpeechSynthesisPort } from './tts/kokoro-speech-synthesis-port.ts';
 export { createKokoroTtsEngineFactory } from './tts/kokoro-tts-engine.ts';
 export type { TtsDevice, TtsEngine, TtsEngineFactory, TtsOutput } from './tts/tts-engine.ts';

@@ -8,6 +8,42 @@ interface CorrectionDiffProps {
   readonly originalText: string;
   readonly correctedText: string;
   readonly corrections: readonly Correction[];
+  readonly onWordSelect?: (word: string) => void; // tap-sur-mot (lot 5.2)
+}
+
+// Retire la ponctuation encadrante ; conserve lettres et apostrophes internes.
+function cleanWord(token: string): string {
+  return token.replace(/^[^A-Za-z']+|[^A-Za-z']+$/g, '');
+}
+
+// Rend chaque mot cliquable (ouvre le panneau prononciation), en conservant le
+// surlignage des fragments corrigés.
+function clickableWords(
+  text: string,
+  fixedFragments: readonly string[],
+  onWordSelect: (word: string) => void,
+) {
+  const fixedWords = new Set(
+    fixedFragments.flatMap((fragment) => fragment.toLowerCase().split(/\s+/)),
+  );
+  return text.split(/(\s+)/).map((token, index) => {
+    const word = cleanWord(token);
+    if (word.length === 0) {
+      return token;
+    }
+    const isFixed = fixedWords.has(word.toLowerCase());
+    return (
+      <button
+        // eslint-disable-next-line react/no-array-index-key
+        key={index}
+        type="button"
+        className={isFixed ? 'word-chip fixed' : 'word-chip'}
+        onClick={() => onWordSelect(word)}
+      >
+        {token}
+      </button>
+    );
+  });
 }
 
 function highlight(text: string, fragments: readonly string[]) {
@@ -29,7 +65,12 @@ function highlight(text: string, fragments: readonly string[]) {
 }
 
 // Vue diff cliquable (dumb) : chaque correction s'ouvre sur sa catégorie + explication.
-export function CorrectionDiff({ originalText, correctedText, corrections }: CorrectionDiffProps) {
+export function CorrectionDiff({
+  originalText,
+  correctedText,
+  corrections,
+  onWordSelect,
+}: CorrectionDiffProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const fixedFragments = corrections.map((correction) => correction.fixed);
 
@@ -40,7 +81,9 @@ export function CorrectionDiff({ originalText, correctedText, corrections }: Cor
         <s>{originalText}</s>
       </p>
       <p className="diff-corrected" lang="en">
-        {highlight(correctedText, fixedFragments)}
+        {onWordSelect !== undefined
+          ? clickableWords(correctedText, fixedFragments, onWordSelect)
+          : highlight(correctedText, fixedFragments)}
       </p>
 
       {corrections.length === 0 ? (

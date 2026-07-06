@@ -177,6 +177,7 @@ Règle : un événement transporte des **copies de valeur immuables**, jamais de
 | `TranscriptionPort` | audio → texte + timestamps mots | whisper WASM / whisper.cpp / WhisperKit |
 | `CorrectionPort` | texte → correction structurée | WebLLM ou cloud-ZDR / llama.cpp ou cloud / cloud |
 | `SpeechSynthesisPort` | texte → audio | kokoro.js (fallback WebSpeech) / Kokoro natif / Piper |
+| `PhonemizerPort` | mot → IPA (aide prononciation) | kokoro-js phonemize (eSpeak-NG) / eSpeak natif / eSpeak |
 | `PronunciationScoringPort` | audio + mot → `UnscoredComparison` (défaut) | ear-compare (toutes plateformes). `ScoreResult` chiffré conditionné à la piste R&D supervisée — cf. §12 |
 | `StoragePort` | persistance | sqlite-wasm+OPFS / SQLite / SQLCipher |
 | `ModelRuntimePort` | cycle de vie des modèles | download/cache OPFS / filesystem / filesystem |
@@ -242,6 +243,12 @@ export interface CorrectionPort {
 export interface SpeechSynthesisPort {
   capability(): RuntimeCapability;
   synthesize(input: { text: string; variant: Variant; rate?: number }): Promise<AudioClip>;
+}
+
+// ---------- Phonémisation (aide prononciation, lot 5.2) ----------
+export interface PhonemizerPort {
+  capability(): RuntimeCapability;
+  toIpa(input: { word: string; variant: Variant }): Promise<string>;
 }
 
 // ---------- Scoring ----------

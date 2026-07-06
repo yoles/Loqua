@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useCorrectionApp } from '@/composition-root';
 import { ConsentGate } from '@/features/consent/ConsentGate';
 import { CorrectionDiff } from '@/features/correction-diff/CorrectionDiff';
 import { ReadAloudButton } from '@/features/read-aloud/ReadAloudButton';
+import { WordPanel } from '@/features/word-practice/WordPanel';
 import { SessionHistory } from '@/features/history/SessionHistory';
 import { StorageControls } from '@/features/settings/StorageControls';
 import { useRecorder } from '@/features/recording/useRecorder';
@@ -17,6 +18,7 @@ export function CorrectionSession() {
   const appCtx = useCorrectionApp();
   const recorder = useRecorder();
   const view = sessionView(appCtx.state);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const onRecordClick = useCallback(async () => {
     if (view.isRecording) {
@@ -142,12 +144,23 @@ export function CorrectionSession() {
             originalText={view.diff.originalText}
             correctedText={view.diff.correctedText}
             corrections={readyCorrections}
+            onWordSelect={setSelectedWord}
           />
           <ReadAloudButton
             port={appCtx.speechSynthesis}
             text={view.diff.correctedText}
             variant={readyVariant}
           />
+          {selectedWord !== null ? (
+            <WordPanel
+              key={selectedWord}
+              word={selectedWord}
+              variant={readyVariant}
+              speech={appCtx.speechSynthesis}
+              phonemizer={appCtx.phonemizer}
+              onClose={() => setSelectedWord(null)}
+            />
+          ) : null}
         </>
       ) : null}
 
