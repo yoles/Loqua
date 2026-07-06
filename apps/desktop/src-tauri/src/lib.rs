@@ -141,6 +141,37 @@ async fn llm_correct(
     .map_err(|e| LlmError::Inference(e.to_string()))?
 }
 
+// WebKitGTK (Linux) refuse getUserMedia par défaut et n'affiche aucune invite :
+// on active le flux média et on n'autorise QUE la permission micro (UserMedia) —
+// tout le reste (géoloc, notifs…) est refusé. Ceci ne débloque que la couche OS ;
+// le consentement biométrique (RGPD art. 9) reste géré côté domaine (Identity)
+// AVANT d'atteindre le micro. L'audio ne quitte jamais l'appareil (invariant #1).
+#[cfg(target_os = "linux")]
+fn enable_microphone_capture(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    use webkit2gtk::glib::prelude::ObjectExt;
+    use webkit2gtk::{PermissionRequestExt, SettingsExt, WebViewExt};
+
+    let window = app
+        .get_webview_window("main")
+        .ok_or("main webview window not found")?;
+    window.with_webview(|webview| {
+        let web_view = webview.inner();
+        if let Some(settings) = WebViewExt::settings(&web_view) {
+            settings.set_enable_media_stream(true);
+            settings.set_enable_mediasource(true);
+        }
+        web_view.connect_permission_request(|_web_view, request| {
+            if request.is::<webkit2gtk::UserMediaPermissionRequest>() {
+                request.allow();
+            } else {
+                request.deny();
+            }
+            true
+        });
+    })?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -148,6 +179,8 @@ pub fn run() {
             let data_dir = app.path().app_data_dir()?;
             app.manage(storage::open_at(&data_dir)?);
             app.manage(SttState::default());
+            #[cfg(target_os = "linux")]
+            enable_microphone_capture(app)?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

@@ -2,23 +2,76 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { blobToAudioClip } from '@/shared/audio/clip';
+import { pcmToAudioClip } from '@/shared/audio/clip';
 import type { AudioClip } from '@loqua/core';
 
 export type RecorderStatus = 'idle' | 'recording' | 'denied' | 'unsupported';
 
 interface UseRecorderResult {
   readonly status: RecorderStatus;
+  readonly deniedReason: string | null;
   start(): Promise<boolean>;
   stop(): Promise<AudioClip | null>;
 }
 
-// Micro → MediaRecorder (webm). L'audio reste en mémoire locale : il ne part
-// jamais dans un flux réseau (invariant #1).
+const PROCESSOR_BUFFER_SIZE = 4096;
+
+interface ActiveCapture {
+  readonly context: AudioContext;
+  readonly source: MediaStreamAudioSourceNode;
+  readonly processor: ScriptProcessorNode;
+  readonly mute: GainNode;
+  readonly stream: MediaStream;
+}
+
+// ScriptProcessorNode est déprécié mais reste le seul chemin de capture PCM
+// fiable sur WebKitGTK (desktop Linux) ; AudioWorklet exigerait un module servi.
+// Le nœud de gain muet évite le larsen (le graphe doit atteindre destination).
+function createCapture(
+  stream: MediaStream,
+  onSamples: (chunk: Float32Array) => void,
+): ActiveCapture {
+  const context = new AudioContext();
+  const source = context.createMediaStreamSource(stream);
+  const processor = context.createScriptProcessor(PROCESSOR_BUFFER_SIZE, 1, 1);
+  const mute = context.createGain();
+  mute.gain.value = 0;
+  processor.onaudioprocess = (event) => {
+    onSamples(new Float32Array(event.inputBuffer.getChannelData(0)));
+  };
+  source.connect(processor);
+  processor.connect(mute);
+  mute.connect(context.destination);
+  return { context, source, processor, mute, stream };
+}
+
+function teardownCapture(capture: ActiveCapture): void {
+  capture.processor.onaudioprocess = null;
+  capture.source.disconnect();
+  capture.processor.disconnect();
+  capture.mute.disconnect();
+  capture.stream.getTracks().forEach((track) => track.stop());
+}
+
+function mergeChunks(chunks: readonly Float32Array[]): Float32Array {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const merged = new Float32Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return merged;
+}
+
+// Micro → PCM float32 via Web Audio API (pas de MediaRecorder : non supporté par
+// WebKitGTK). L'audio reste en mémoire locale : il ne part jamais dans un flux
+// réseau (invariant #1).
 export function useRecorder(): UseRecorderResult {
   const [status, setStatus] = useState<RecorderStatus>('idle');
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const [deniedReason, setDeniedReason] = useState<string | null>(null);
+  const captureRef = useRef<ActiveCapture | null>(null);
+  const chunksRef = useRef<Float32Array[]>([]);
   const startedAtRef = useRef<number>(0);
 
   const start = useCallback(async (): Promise<boolean> => {
@@ -28,45 +81,39 @@ export function useRecorder(): UseRecorderResult {
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
       chunksRef.current = [];
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      };
-      recorder.start();
-      recorderRef.current = recorder;
+      captureRef.current = createCapture(stream, (chunk) => chunksRef.current.push(chunk));
       startedAtRef.current = performance.now();
       setStatus('recording');
       return true;
-    } catch {
+    } catch (error: unknown) {
+      const reason =
+        error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      setDeniedReason(reason);
       setStatus('denied');
       return false;
     }
   }, []);
 
   const stop = useCallback(async (): Promise<AudioClip | null> => {
-    const recorder = recorderRef.current;
-    if (recorder === null || recorder.state === 'inactive') {
+    const capture = captureRef.current;
+    if (capture === null) {
       return null;
     }
-    const stopped = new Promise<void>((resolve) => {
-      recorder.onstop = () => resolve();
-    });
-    recorder.stop();
-    await stopped;
-    recorder.stream.getTracks().forEach((track) => track.stop());
-    recorderRef.current = null;
+    teardownCapture(capture);
+    const { sampleRate } = capture.context;
+    await capture.context.close();
+    captureRef.current = null;
     setStatus('idle');
 
     const durationMs = Math.round(performance.now() - startedAtRef.current);
-    const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-    if (blob.size === 0) {
+    const samples = mergeChunks(chunksRef.current);
+    chunksRef.current = [];
+    if (samples.length === 0) {
       return null;
     }
-    return blobToAudioClip(blob, durationMs);
+    return pcmToAudioClip(samples, sampleRate, durationMs);
   }, []);
 
-  return { status, start, stop };
+  return { status, deniedReason, start, stop };
 }

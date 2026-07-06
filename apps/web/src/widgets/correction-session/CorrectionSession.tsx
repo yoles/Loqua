@@ -75,6 +75,7 @@ export function CorrectionSession() {
         {recorder.status === 'denied' ? (
           <p className="status-line" role="alert">
             Accès micro refusé par le navigateur — vérifie les permissions du site.
+            {recorder.deniedReason !== null ? ` [${recorder.deniedReason}]` : ''}
           </p>
         ) : null}
 

@@ -3,6 +3,7 @@ name = "loqua-desktop"
 version = "0.1.0"
 description = "Loqua — coach vocal d'anglais, 100 % local"
 edition = "2021"
+default-run = "loqua-desktop"
 
 [lib]
 name = "loqua_desktop_lib"
@@ -25,6 +26,13 @@ hound = "3"
 # Download des modèles à la première utilisation (ModelRuntimePort) + checksum
 ureq = "2"
 sha2 = "0.10"
+
+# WebKitGTK (Linux) refuse getUserMedia par défaut et n'affiche AUCUNE invite de
+# permission : on doit activer enable-media-stream et gérer permission-request
+# côté Rust (voir lib.rs). Déjà dans l'arbre via wry ; version épinglée sur celle
+# de Tauri — les types doivent s'unifier avec PlatformWebview::inner().
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "=2.0.2"
 
 [profile.release]
 strip = true
