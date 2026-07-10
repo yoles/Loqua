@@ -20,3 +20,6 @@ apps/desktop/src-tauri/binaries/
 # secrets — jamais committés
 .env*
 .dev.vars
+
+# documents personnels (candidature, notes) — non committés
+CANDIDATURE-*.md
