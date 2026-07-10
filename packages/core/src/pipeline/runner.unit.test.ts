@@ -86,6 +86,39 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     expect(runner.state().phase).toBe('READY');
   });
 
+  it('can record a new sentence after reaching READY', async () => {
+    const { phases, onState } = collect();
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection(),
+      variant: 'en-US',
+      onState,
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+    expect(runner.state().phase).toBe('READY');
+
+    runner.startRecording();
+    await runner.finishRecording({ ...clip, id: 'clip-2' });
+
+    expect(runner.state().phase).toBe('READY');
+    expect(phases).toEqual([
+      'RECORDING',
+      'TRANSCRIBING',
+      'TRANSCRIBED',
+      'CORRECTING',
+      'CORRECTED',
+      'READY',
+      'RECORDING',
+      'TRANSCRIBING',
+      'TRANSCRIBED',
+      'CORRECTING',
+      'CORRECTED',
+      'READY',
+    ]);
+  });
+
   it('surfaces an STT failure as FAILED_STT with the reason', async () => {
     const transcriptionPort = fakeTranscription({
       transcribe: vi.fn().mockRejectedValue(new Error('model crashed')),

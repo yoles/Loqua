@@ -148,6 +148,9 @@ function next(state: PipelineState, event: PipelineEvent): PipelineState {
       return reject(state, event);
 
     case 'READY':
+      if (event.type === 'RecordStarted') {
+        return { phase: 'RECORDING' };
+      }
       return reject(state, event);
 
     case 'FAILED_STT':

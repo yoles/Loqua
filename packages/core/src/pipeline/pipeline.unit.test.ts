@@ -62,6 +62,15 @@ describe('pipeline reducer — happy path', () => {
     }
   });
 
+  it('starts a fresh recording from READY (record another sentence)', () => {
+    const ready = drive(happyPathToReady);
+    expect(ready.phase).toBe('READY');
+
+    const recording = transition(ready, { type: 'RecordStarted' });
+
+    expect(recording).toEqual({ phase: 'RECORDING' });
+  });
+
   it('returns frozen states (no mutation from consumers)', () => {
     const state = drive(happyPathToReady);
 
