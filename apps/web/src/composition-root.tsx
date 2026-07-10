@@ -116,6 +116,7 @@ export interface CorrectionApp {
   readonly scoring: PronunciationScoringPort; // ear-compare (unscored, Spike #2)
   readonly downloadProgress: number | null; // 0..1 pendant le download du modèle STT
   readonly sttTier: string;
+  readonly isDesktop: boolean; // Tauri : 100 % local, le cloud opt-in est masqué
   readonly microphoneConsent: boolean;
   readonly cloudCorrection: boolean;
   readonly sessions: readonly SessionRecord[];
@@ -182,18 +183,16 @@ function useCorrectionAppInternal(): CorrectionApp {
       correction = cloudCorrection;
     }
 
-    // TTS local (lot 5.1) : web = kokoro.js. Desktop natif = incrément suivant ;
-    // en attendant le port est null et le feature read-aloud replie sur WebSpeech.
-    const speechSynthesis: SpeechSynthesisPort | null = isTauriRuntime()
-      ? null
-      : createKokoroSpeechSynthesisPort({
-          engineFactory: createKokoroTtsEngineFactory(),
-          onDownloadProgress,
-        });
-    // Phonémisation IPA (lot 5.2) : web = kokoro-js/eSpeak ; desktop natif à venir.
-    const phonemizer: PhonemizerPort | null = isTauriRuntime()
-      ? null
-      : createKokoroPhonemizerPort();
+    // TTS local (lot 5.1) : kokoro.js (onnxruntime-web/WASM) sur web ET desktop.
+    // Le webview Tauri (WebKitGTK) n'expose pas de WebSpeech utilisable, donc le
+    // repli navigateur n'existe pas là : on utilise directement le TTS WASM local.
+    // L'audio reste sur l'appareil (invariant #1) ; le tier reste VISIBLE (#5).
+    const speechSynthesis: SpeechSynthesisPort = createKokoroSpeechSynthesisPort({
+      engineFactory: createKokoroTtsEngineFactory(),
+      onDownloadProgress,
+    });
+    // Phonémisation IPA (lot 5.2) : kokoro-js/eSpeak (WASM), web ET desktop.
+    const phonemizer: PhonemizerPort = createKokoroPhonemizerPort();
     // ear-compare (lot 5.3) : adapter pur (pas de score, Spike #2), toutes plateformes.
     const scoring: PronunciationScoringPort = createEarCompareScoringPort();
 
@@ -331,6 +330,7 @@ function useCorrectionAppInternal(): CorrectionApp {
     scoring: app.scoring,
     downloadProgress,
     sttTier: app.transcription.capability().qualityTier,
+    isDesktop: isTauriRuntime(),
     microphoneConsent,
     cloudCorrection,
     sessions,

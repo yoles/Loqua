@@ -58,15 +58,22 @@ export function CorrectionSession() {
           ) : null}
         </p>
 
-        <label style={{ display: 'block', marginBlock: '0.75rem' }}>
-          <input
-            type="checkbox"
-            checked={appCtx.cloudCorrection}
-            onChange={(event) => appCtx.setCloudCorrection(event.target.checked)}
-          />{' '}
-          Correction avancée (cloud sans rétention — <strong>texte seul</strong>, jamais
-          l&apos;audio)
-        </label>
+        {appCtx.isDesktop ? (
+          <p className="status-line" style={{ marginBlock: '0.75rem' }}>
+            Correction <strong>100 % locale</strong> — ta voix et ton texte ne quittent jamais
+            cette machine.
+          </p>
+        ) : (
+          <label style={{ display: 'block', marginBlock: '0.75rem' }}>
+            <input
+              type="checkbox"
+              checked={appCtx.cloudCorrection}
+              onChange={(event) => appCtx.setCloudCorrection(event.target.checked)}
+            />{' '}
+            Correction avancée (cloud sans rétention — <strong>texte seul</strong>, jamais
+            l&apos;audio)
+          </label>
+        )}
 
         <button
           type="button"
@@ -101,7 +108,7 @@ export function CorrectionSession() {
         <section className="panel error-panel" role="alert">
           <h2>{view.failure.kind === 'stt' ? 'Transcription impossible' : 'Correction impossible'}</h2>
           <p className="status-line">{view.failure.reason}</p>
-          {egressRefused ? (
+          {egressRefused && !appCtx.isDesktop ? (
             <p>
               La correction avancée est désactivée : active « Correction avancée » ci-dessus
               (seul le <strong>texte</strong> transcrit est envoyé, jamais ta voix), puis
