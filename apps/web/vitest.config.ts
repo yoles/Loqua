@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vitest/config';
 
 // Reporting only, no thresholds: apps/web has near-zero test coverage on
@@ -5,6 +7,10 @@ import { defineConfig } from 'vitest/config';
 // on a coverage number here would block every commit on pre-existing debt.
 // Flip on `thresholds` once that debt is paid down.
 export default defineConfig({
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
+  esbuild: { jsx: 'automatic' },
   test: {
     coverage: {
       provider: 'v8',
