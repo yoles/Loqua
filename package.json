@@ -11,10 +11,25 @@
     "lint:types": "oxlint --type-aware",
     "lint:deps": "depcruise packages apps services tooling --config .dependency-cruiser.cjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "oxlint --deny-warnings",
+      "prettier --write"
+    ],
+    "*.{json,css,md,html,yaml,yml}": [
+      "prettier --write"
+    ],
+    "*.rs": [
+      "rustfmt --edition 2021"
+    ]
   },
   "devDependencies": {
     "dependency-cruiser": "^18.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "oxlint": "^1.73.0",
     "oxlint-tsgolint": "^0.24.0",
     "prettier": "^3.9.5",
