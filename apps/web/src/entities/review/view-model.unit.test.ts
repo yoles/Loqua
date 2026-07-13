@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { makeCard, makeCardId } from '@loqua/core';
+import { ERROR_TYPES, makeCard, makeCardId } from '@loqua/core';
 
-import { GRADE_LABELS, reviewDeckView } from './view-model';
+import { ERROR_TYPE_LABELS, GRADE_LABELS, reviewDeckView } from './view-model';
 
 const NOW = 1_700_000_000_000;
 
@@ -39,6 +39,22 @@ describe('review deck view-model', () => {
 
     expect(view.isDone).toBe(true);
     expect(view.current).toBeNull();
+  });
+
+  it('labels a register error card in French instead of leaking the raw identifier', () => {
+    const card = makeCard({
+      id: makeCardId('card-register'),
+      item: { kind: 'error', type: 'register', original: 'gonna do it', fixed: 'going to do it' },
+      createdAtMs: NOW,
+    });
+
+    const view = reviewDeckView([card]);
+
+    expect(view.current?.categoryLabel).toBe('registre de langue');
+  });
+
+  it('labels every error type of the taxonomy in French', () => {
+    expect(Object.keys(ERROR_TYPE_LABELS).sort()).toEqual([...ERROR_TYPES].sort());
   });
 
   it('labels every review grade in French', () => {

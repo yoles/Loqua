@@ -1,4 +1,4 @@
-import type { Card, ReviewGrade } from '@loqua/core';
+import type { Card, ErrorType, ReviewGrade } from '@loqua/core';
 
 // Libellés UI en français (le code reste en anglais).
 export const GRADE_LABELS: Record<ReviewGrade, string> = {
@@ -8,7 +8,7 @@ export const GRADE_LABELS: Record<ReviewGrade, string> = {
   easy: 'Facile',
 };
 
-export const ERROR_TYPE_LABELS: Record<string, string> = {
+export const ERROR_TYPE_LABELS: Record<ErrorType, string> = {
   tense: 'temps verbal',
   grammar: 'grammaire',
   vocabulary: 'vocabulaire',
@@ -16,6 +16,7 @@ export const ERROR_TYPE_LABELS: Record<string, string> = {
   syntax: 'syntaxe',
   'word-order': 'ordre des mots',
   article: 'article',
+  register: 'registre de langue',
 };
 
 export interface ReviewCardView {
@@ -38,7 +39,7 @@ function cardView(card: Card): ReviewCardView {
   return {
     prompt: card.item.original,
     answer: card.item.fixed,
-    categoryLabel: ERROR_TYPE_LABELS[card.item.type] ?? card.item.type,
+    categoryLabel: ERROR_TYPE_LABELS[card.item.type],
   };
 }
 
