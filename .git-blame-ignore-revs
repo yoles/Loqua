@@ -1,0 +1,11 @@
+# Commits ignored by `git blame` (git config blame.ignoreRevsFile .git-blame-ignore-revs
+# for local CLI use; GitHub's web blame view picks this file up automatically).
+# Only whitespace-only / mass reformatting commits belong here — never a commit
+# that also changes behavior. Add new entries here in the same commit (or the
+# very next one) whenever a repo-wide reformat happens again.
+
+# chore: add Prettier and oxlint, reformat the codebase
+4e8292b3933d111f82110b8052b69b5903e345d4
+
+# style: apply Prettier formatting to CorrectionSession.tsx
+9c3fe4958ca7c7b9c7940cac274493c14d22c222
