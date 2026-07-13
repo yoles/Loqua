@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push on the same branch cancels the previous run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        # No `version`: the action reads the "packageManager" field of package.json.
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Cache Rust (apps/desktop)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check architecture boundaries (dependency-cruiser)
+        run: pnpm lint:deps
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Runs both the JS/TS (Vitest) and Rust (cargo test) suites via turbo.
+      # Never runs `pnpm eval` here: it hits a real LLM over the network
+      # (cost, and not this workflow's job — see tooling/eval).
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

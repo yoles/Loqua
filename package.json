@@ -2,6 +2,9 @@
   "name": "loqua",
   "private": true,
   "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "pnpm lint:deps && turbo run build",
     "test": "turbo run test",

@@ -12,3 +12,6 @@ apps/desktop/src-tauri/binaries
 .wrangler
 *.tsbuildinfo
 CANDIDATURE-*.md
+
+# Auto-généré par Next.js à chaque build/dev, style non-Prettier, "should not be edited"
+apps/web/next-env.d.ts
