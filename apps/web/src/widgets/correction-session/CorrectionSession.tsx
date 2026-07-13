@@ -42,8 +42,7 @@ export function CorrectionSession() {
     appCtx.state.phase === 'READY' ? appCtx.state.correction.corrections : [];
   const correctionTier =
     appCtx.state.phase === 'READY' ? appCtx.state.correction.qualityTier : null;
-  const readyVariant =
-    appCtx.state.phase === 'READY' ? appCtx.state.correction.variant : 'en-US';
+  const readyVariant = appCtx.state.phase === 'READY' ? appCtx.state.correction.variant : 'en-US';
 
   return (
     <ConsentGate
@@ -60,8 +59,8 @@ export function CorrectionSession() {
 
         {appCtx.isDesktop ? (
           <p className="status-line" style={{ marginBlock: '0.75rem' }}>
-            Correction <strong>100 % locale</strong> — ta voix et ton texte ne quittent jamais
-            cette machine.
+            Correction <strong>100 % locale</strong> — ta voix et ton texte ne quittent jamais cette
+            machine.
           </p>
         ) : (
           <label style={{ display: 'block', marginBlock: '0.75rem' }}>
@@ -106,13 +105,14 @@ export function CorrectionSession() {
 
       {view.failure !== null ? (
         <section className="panel error-panel" role="alert">
-          <h2>{view.failure.kind === 'stt' ? 'Transcription impossible' : 'Correction impossible'}</h2>
+          <h2>
+            {view.failure.kind === 'stt' ? 'Transcription impossible' : 'Correction impossible'}
+          </h2>
           <p className="status-line">{view.failure.reason}</p>
           {egressRefused && !appCtx.isDesktop ? (
             <p>
-              La correction avancée est désactivée : active « Correction avancée » ci-dessus
-              (seul le <strong>texte</strong> transcrit est envoyé, jamais ta voix), puis
-              réessaie.
+              La correction avancée est désactivée : active « Correction avancée » ci-dessus (seul
+              le <strong>texte</strong> transcrit est envoyé, jamais ta voix), puis réessaie.
             </p>
           ) : null}
           {undecodableAudio ? (
