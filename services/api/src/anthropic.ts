@@ -1,18 +1,10 @@
 // Construction/parsing des échanges avec l'API Anthropic — fonctions PURES
 // (testées sans réseau). Le serveur relaie : il ne lit ni ne journalise le contenu.
+// La taxonomie vient de @loqua/core (ARCHITECTURE §9) — jamais redéfinie ici.
+
+import { ERROR_TYPES } from '@loqua/core';
 
 export const DEFAULT_CORRECTION_MODEL = 'claude-sonnet-5';
-
-const ERROR_TYPES = [
-  'grammar',
-  'syntax',
-  'vocabulary',
-  'idiom',
-  'register',
-  'word-order',
-  'article',
-  'tense',
-] as const;
 
 const CORRECTION_TOOL = {
   name: 'report_correction',
