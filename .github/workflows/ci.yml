@@ -53,5 +53,11 @@ jobs:
       - name: Test
         run: pnpm test
 
+      # Coverage thresholds, per package (apps/desktop has no test:coverage
+      # script — Rust coverage isn't wired up yet — so it's skipped by turbo;
+      # its tests still ran above via `pnpm test`).
+      - name: Test with coverage thresholds
+        run: pnpm test:coverage
+
       - name: Build
         run: pnpm build

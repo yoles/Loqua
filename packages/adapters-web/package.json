@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc --noEmit",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@huggingface/transformers": "4.2.0",
