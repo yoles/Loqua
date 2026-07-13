@@ -100,11 +100,11 @@ const systemClock: ClockPort = {
 function routeCorrection(
   local: CorrectionPort,
   cloud: CorrectionPort,
-  useCloud: () => boolean,
+  shouldUseCloud: () => boolean,
 ): CorrectionPort {
   return {
-    capability: () => (useCloud() ? cloud : local).capability(),
-    correct: (input) => (useCloud() ? cloud : local).correct(input),
+    capability: () => (shouldUseCloud() ? cloud : local).capability(),
+    correct: (input) => (shouldUseCloud() ? cloud : local).correct(input),
   };
 }
 

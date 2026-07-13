@@ -57,8 +57,11 @@ describe('POST /v1/correction (LLM provider always mocked)', () => {
     );
 
     const call = fetchMock.mock.calls[0];
-    expect(call).toBeDefined();
-    const body = JSON.parse((call?.[1] as { body: string }).body) as {
+    if (!call) {
+      throw new Error('fetch mock was not called');
+    }
+    const [, init] = call as [unknown, { body: string }];
+    const body = JSON.parse(init.body) as {
       messages: { content: string }[];
     };
     expect(body.messages).toHaveLength(1);
