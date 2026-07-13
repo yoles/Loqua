@@ -1,6 +1,30 @@
 /** Garde-fou d'architecture (ARCHITECTURE §5) — la flèche pointe toujours vers core. */
+
+// Couches FSD d'apps/web, de la plus haute à la plus basse (0-frontend-fsd-screaming).
+// La couche « pages » FSD s'appelle views/ : un dossier src/pages activerait le
+// Pages Router de Next à côté de l'App Router.
+const FSD_LAYERS = ['app', 'views', 'widgets', 'features', 'entities', 'shared'];
+
+const fsdNoUpwardImports = FSD_LAYERS.slice(1).map((layer, index) => ({
+  name: `fsd-${layer}-sans-import-montant`,
+  severity: 'error',
+  comment: `FSD : ${layer} n'importe jamais une couche au-dessus de lui`,
+  from: { path: `^apps/web/src/${layer}/` },
+  to: { path: `^apps/web/src/(${FSD_LAYERS.slice(0, index + 1).join('|')})/` },
+}));
+
+const fsdNoLateralImports = {
+  name: 'fsd-sans-import-lateral',
+  severity: 'error',
+  comment: "FSD : pas d'import entre slices d'une même couche",
+  from: { path: '^apps/web/src/(views|widgets|features|entities)/([^/]+)/' },
+  to: { path: '^apps/web/src/$1/', pathNot: '^apps/web/src/$1/$2/' },
+};
+
 module.exports = {
   forbidden: [
+    ...fsdNoUpwardImports,
+    fsdNoLateralImports,
     {
       name: 'core-n-importe-personne',
       severity: 'error',

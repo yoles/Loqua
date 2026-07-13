@@ -1,6 +1,6 @@
-import { AppShell } from '@/widgets/app-shell/AppShell';
+import { HomePage } from '@/views/home/HomePage';
 
-export default function HomePage() {
+export default function Home() {
   return (
     <main>
       <h1>Loqua</h1>
@@ -8,7 +8,7 @@ export default function HomePage() {
         Parle anglais, reçois une version naturelle expliquée. Ta voix ne quitte jamais cette
         machine.
       </p>
-      <AppShell />
+      <HomePage />
     </main>
   );
 }
