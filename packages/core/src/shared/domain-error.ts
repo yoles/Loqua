@@ -2,11 +2,11 @@ export type BoundedContext =
   'shared' | 'correction' | 'pronunciation' | 'srs' | 'gamification' | 'identity' | 'pipeline';
 
 export abstract class DomainError extends Error {
-  protected constructor(
-    readonly context: BoundedContext,
-    message: string,
-  ) {
+  readonly context: BoundedContext;
+
+  protected constructor(context: BoundedContext, message: string) {
     super(message);
+    this.context = context;
     this.name = new.target.name;
   }
 }
