@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc --noEmit",
     "dev": "wrangler dev",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "hono": "^4.12.27",

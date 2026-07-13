@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm lint:deps && turbo run build",
     "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
     "eval": "pnpm --filter @loqua/eval eval",
     "lint": "oxlint",
     "lint:types": "oxlint --type-aware",

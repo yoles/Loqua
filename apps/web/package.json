@@ -10,7 +10,8 @@
     "predev": "node scripts/copy-sqlite-wasm.mjs",
     "dev": "next dev",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@loqua/adapters-tauri": "workspace:*",
