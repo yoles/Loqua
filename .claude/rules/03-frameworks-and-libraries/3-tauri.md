@@ -13,7 +13,8 @@ Adapters :
 
 - Un adapter Tauri = mapping port ↔ commande IPC, zéro logique métier
 - Valider avec Zod ce qui revient de l'IPC avant de le retourner au `core`
-- Audio échangé par chemin de fichier local, jamais par blob IPC
+- Audio écrit UNE fois sur disque via le canal binaire BRUT de Tauri (commande dédiée type `store_clip`) — jamais de blob audio en JSON/base64
+- Ensuite : échanges audio par id ; chemins résolus côté Rust, jamais fournis par le frontend (ARCHITECTURE §15)
 - Desktop = foyer du 100 % local : `CorrectionPort` par défaut = llama.cpp local (jusqu'à 14-27B)
 
 Persistance :

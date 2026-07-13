@@ -12,8 +12,9 @@ Rôle :
 IPC (durcissement, ARCHITECTURE §15) :
 
 - Valider TOUTES les entrées des commandes `invoke()` côté Rust (types, bornes, chemins)
-- Audio passé par CHEMIN DE FICHIER local (acquis Spike #3), jamais par blob dans l'IPC
-- Vérifier que les chemins reçus restent dans les répertoires autorisés de l'app (pas de traversal)
+- Sidecar : audio consommé par CHEMIN DE FICHIER local (acquis Spike #3), jamais de blob en JSON
+- Ingestion webview→Rust : canal binaire BRUT vers une commande dédiée qui écrit sur disque — seule exception admise au « pas de blob IPC »
+- Chemins résolus côté Rust depuis des ids validés, jamais fournis par le frontend (pas de traversal)
 - Allowlist Tauri minimale : n'exposer que les commandes réellement utilisées
 
 Erreurs :

@@ -1,8 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 
 // Signature alignée sur @tauri-apps/api : un payload binaire (Uint8Array) passe
-// par le canal BRUT de Tauri (pas de sérialisation JSON) — c'est la seule forme
-// autorisée pour l'audio, et uniquement vers le disque local (jamais le réseau).
+// par le canal BRUT de Tauri (pas de sérialisation JSON). Pour l'audio, c'est
+// l'exception actée par ARCHITECTURE §15 et 2-rust-sidecars : une écriture
+// disque unique via une commande dédiée, uniquement locale (jamais le réseau).
 export type TauriInvokeArgs = Record<string, unknown> | Uint8Array | ArrayBuffer;
 
 export interface TauriInvokeOptions {

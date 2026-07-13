@@ -400,7 +400,7 @@ Les consommateurs (SRS, gamification) gèrent `UnscoredComparison` **dès mainte
 - **Point de sortie unique :** une seule fonction du `core` (`egressGuard`) décide si du texte peut partir (consentement + opt-in Option B + capacité de l'adapter). Aucun adapter ne fait de `fetch` de contenu sans passer par elle.
 - **Consentement biométrique** (audio, même local) modélisé dans Identity/`Consent`, requis avant première utilisation du micro.
 - **Observabilité privacy-preserving :** métriques anonymes/locales ; aucune télémétrie de contenu ; masquage systématique si Sentry-like.
-- **Durcissement Tauri :** valider toutes les entrées de l'IPC vers les sidecars Rust.
+- **Durcissement Tauri :** valider toutes les entrées de l'IPC vers les sidecars Rust. L'audio capté dans la webview est écrit UNE fois sur disque via le canal binaire brut de Tauri (commande dédiée, jamais de JSON/base64) ; tout le reste s'échange par id, chemins résolus côté Rust — jamais fournis par le frontend (anti-traversal).
 
 ---
 
