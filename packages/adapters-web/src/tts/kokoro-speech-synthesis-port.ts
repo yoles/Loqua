@@ -1,9 +1,4 @@
-import type {
-  AudioClip,
-  RuntimeCapability,
-  SpeechSynthesisPort,
-  Variant,
-} from '@loqua/core';
+import type { AudioClip, RuntimeCapability, SpeechSynthesisPort, Variant } from '@loqua/core';
 import type { TtsDevice, TtsEngine, TtsEngineFactory } from './tts-engine.ts';
 
 interface KokoroPortOptions {

@@ -91,7 +91,9 @@ describe('kokoro speech synthesis adapter honours the SpeechSynthesisPort contra
       .fn()
       .mockRejectedValueOnce(new Error('transient'))
       .mockResolvedValue({ samples: new Float32Array(240).fill(0.2), sampleRate: 24_000 });
-    const port = createKokoroSpeechSynthesisPort({ engineFactory: factoryFor(fakeEngine({ run })) });
+    const port = createKokoroSpeechSynthesisPort({
+      engineFactory: factoryFor(fakeEngine({ run })),
+    });
 
     await expect(port.synthesize({ text: 'hi', variant: 'en-US' })).rejects.toThrow();
     const clip = await port.synthesize({ text: 'hi', variant: 'en-US' });

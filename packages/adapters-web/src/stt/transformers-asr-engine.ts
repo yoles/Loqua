@@ -56,7 +56,10 @@ async function loadEngine(
   onProgress?: (ratio: number) => void,
 ): Promise<{ device: AsrDevice; transcriber: AutomaticSpeechRecognitionPipeline }> {
   try {
-    return { device: preferredDevice, transcriber: await loadPipeline(model, preferredDevice, onProgress) };
+    return {
+      device: preferredDevice,
+      transcriber: await loadPipeline(model, preferredDevice, onProgress),
+    };
   } catch (error: unknown) {
     if (preferredDevice === 'wasm') {
       throw error;

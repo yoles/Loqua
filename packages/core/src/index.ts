@@ -15,7 +15,11 @@ export { makePhoneme, type Phoneme } from './shared/phoneme.ts';
 export { VARIANTS, isVariant, type Variant } from './shared/variant.ts';
 
 // correction
-export { makeCorrection, type Correction, type WordSpan } from './contexts/correction/correction.ts';
+export {
+  makeCorrection,
+  type Correction,
+  type WordSpan,
+} from './contexts/correction/correction.ts';
 export { ERROR_TYPES, isErrorType, type ErrorType } from './contexts/correction/error-type.ts';
 export { CorrectionError } from './contexts/correction/errors.ts';
 export { makeUtterance, type Utterance } from './contexts/correction/utterance.ts';
@@ -125,11 +129,7 @@ export {
 export type { AudioClip, AudioFormat } from './ports/audio-clip.ts';
 export type { ClockPort } from './ports/clock-port.ts';
 export type { CorrectionPort, CorrectionResult } from './ports/correction-port.ts';
-export type {
-  ModelDescriptor,
-  ModelRuntimePort,
-  ModelTask,
-} from './ports/model-runtime-port.ts';
+export type { ModelDescriptor, ModelRuntimePort, ModelTask } from './ports/model-runtime-port.ts';
 export type { PronunciationScoringPort } from './ports/pronunciation-scoring-port.ts';
 export type { QualityTier, RuntimeCapability } from './ports/runtime-capability.ts';
 export type { SpeechSynthesisPort } from './ports/speech-synthesis-port.ts';

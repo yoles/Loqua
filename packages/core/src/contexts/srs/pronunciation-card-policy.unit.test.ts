@@ -21,13 +21,13 @@ function memoryStorage(): StoragePort & { dump(collection: string): Map<string, 
     return existing;
   };
   return {
-    read: <TValue,>(collection: string, id: string) =>
+    read: <TValue>(collection: string, id: string) =>
       Promise.resolve((of(collection).get(id) as TValue | undefined) ?? null),
     put: (collection, id, value) => {
       of(collection).set(id, value);
       return Promise.resolve();
     },
-    query: <TValue,>(collection: string) =>
+    query: <TValue>(collection: string) =>
       Promise.resolve([...of(collection).values()] as TValue[]),
     delete: (collection, id) => {
       of(collection).delete(id);

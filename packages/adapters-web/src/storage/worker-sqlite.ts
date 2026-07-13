@@ -90,7 +90,11 @@ export async function openWorkerSqliteDatabase(
     }
   };
 
-  function send(op: 'run' | 'all', sql: string, params: readonly SqliteParam[]): Promise<SqliteRow[]> {
+  function send(
+    op: 'run' | 'all',
+    sql: string,
+    params: readonly SqliteParam[],
+  ): Promise<SqliteRow[]> {
     const id = nextRequestId;
     nextRequestId += 1;
     return new Promise((resolve, reject) => {

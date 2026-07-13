@@ -87,8 +87,7 @@ export function useRecorder(): UseRecorderResult {
       setStatus('recording');
       return true;
     } catch (error: unknown) {
-      const reason =
-        error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
       setDeniedReason(reason);
       setStatus('denied');
       return false;

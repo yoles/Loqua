@@ -74,10 +74,10 @@ describe('session view model reflects the pipeline state', () => {
   });
 
   it('identifies an egress refusal so the UI can propose the cloud opt-in', () => {
-    const failedLlm = transition(
-      transition(stateAt('TRANSCRIBED'), { type: 'CorrectStarted' }),
-      { type: 'CorrectErr', reason: 'egress refused: no-consent' },
-    );
+    const failedLlm = transition(transition(stateAt('TRANSCRIBED'), { type: 'CorrectStarted' }), {
+      type: 'CorrectErr',
+      reason: 'egress refused: no-consent',
+    });
 
     const view = sessionView(failedLlm);
 

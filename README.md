@@ -19,19 +19,19 @@ Les assistants génériques (ChatGPT & co.) corrigent bien une phrase, mais oubl
 1. **L'audio ne quitte jamais l'appareil** — STT, TTS et scoring sont locaux, toujours.
 2. **Seul du texte peut sortir**, vers un LLM cloud-ZDR, **uniquement sur opt-in explicite**, par un point de sortie unique et audité (`egressGuard`).
 3. **Coût serveur ~0** — aucune orchestration ni traitement d'audio côté serveur ; il ne lit jamais de données utilisateur.
-4. **Fallback jamais silencieux** — toute bascule local → cloud est consentie *et* visible dans l'UI.
+4. **Fallback jamais silencieux** — toute bascule local → cloud est consentie _et_ visible dans l'UI.
 5. **Effacement RGPD by design** — une donnée dérivée (carte SRS…) est une copie de valeur, jamais une référence effaçable vers la source.
 
 ---
 
 ## Ce que fait Loqua aujourd'hui
 
-| Boucle | Description | Statut |
-|---|---|---|
-| **Corriger** | Enregistrer → transcription locale (Whisper) → correction structurée (« naturel », en-US) → **diff cliquable** avec catégorie d'erreur + explication | ✅ Web |
-| **Retenir** | Chaque faute devient une carte SRS (SM-2) ; le deck du jour vous rappelle vos erreurs ; streak & XP | ✅ Web |
-| **Prononcer** | Écoute de la version corrigée (TTS local), tap-sur-mot (IPA, syllabes, boucle, vitesse), enregistre-toi & compare (A/B + waveform) | ✅ Web |
-| **100 % local** | Desktop Tauri : STT, LLM et TTS natifs, réseau débranché | 🚧 En cours (Sprint 4) |
+| Boucle          | Description                                                                                                                                          | Statut                 |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| **Corriger**    | Enregistrer → transcription locale (Whisper) → correction structurée (« naturel », en-US) → **diff cliquable** avec catégorie d'erreur + explication | ✅ Web                 |
+| **Retenir**     | Chaque faute devient une carte SRS (SM-2) ; le deck du jour vous rappelle vos erreurs ; streak & XP                                                  | ✅ Web                 |
+| **Prononcer**   | Écoute de la version corrigée (TTS local), tap-sur-mot (IPA, syllabes, boucle, vitesse), enregistre-toi & compare (A/B + waveform)                   | ✅ Web                 |
+| **100 % local** | Desktop Tauri : STT, LLM et TTS natifs, réseau débranché                                                                                             | 🚧 En cours (Sprint 4) |
 
 > **Note** : le scoring de prononciation **chiffré** a été volontairement écarté (un spike a montré qu'aucun score fiable n'était atteignable sans modèle supervisé). Loqua propose une comparaison A/B honnête (`ear-compare`), pas un score arbitraire.
 
@@ -67,16 +67,16 @@ Loqua est un monorepo **pnpm + Turborepo** organisé en architecture **hexagonal
 
 ### Le monorepo
 
-| Paquet | Rôle |
-|---|---|
-| `packages/core` | **Cœur métier en TS pur.** 5 bounded contexts (`correction`, `pronunciation`, `srs`, `gamification`, `identity`), machine à états du pipeline, bus d'événements, `egressGuard`, ports. **Zéro dépendance runtime**, aucun accès DOM / Node / réseau. |
-| `packages/adapters-web` | Implémente les ports pour le navigateur : `transformers.js` (Whisper), `kokoro.js` (TTS), SQLite-WASM + OPFS, proxy `fetch`. |
-| `packages/adapters-tauri` | Implémente les ports via `invoke()` vers des sidecars Rust natifs, SQLite natif. |
-| `packages/ui-web` | Composants React DOM partagés entre web et desktop. |
-| `apps/web` | Application **Next.js** (App Router + architecture FSD). |
-| `apps/desktop` | Application **Tauri 2** — réutilise le frontend web, seuls les adapters injectés changent. |
-| `services/api` | Backend **fin** (Hono / Cloudflare Workers) : proxy LLM ZDR, texte seul. |
-| `tooling/eval` | Harness d'évaluation de l'IA (golden set, LLM-juge, non-régression). |
+| Paquet                    | Rôle                                                                                                                                                                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/core`           | **Cœur métier en TS pur.** 5 bounded contexts (`correction`, `pronunciation`, `srs`, `gamification`, `identity`), machine à états du pipeline, bus d'événements, `egressGuard`, ports. **Zéro dépendance runtime**, aucun accès DOM / Node / réseau. |
+| `packages/adapters-web`   | Implémente les ports pour le navigateur : `transformers.js` (Whisper), `kokoro.js` (TTS), SQLite-WASM + OPFS, proxy `fetch`.                                                                                                                         |
+| `packages/adapters-tauri` | Implémente les ports via `invoke()` vers des sidecars Rust natifs, SQLite natif.                                                                                                                                                                     |
+| `packages/ui-web`         | Composants React DOM partagés entre web et desktop.                                                                                                                                                                                                  |
+| `apps/web`                | Application **Next.js** (App Router + architecture FSD).                                                                                                                                                                                             |
+| `apps/desktop`            | Application **Tauri 2** — réutilise le frontend web, seuls les adapters injectés changent.                                                                                                                                                           |
+| `services/api`            | Backend **fin** (Hono / Cloudflare Workers) : proxy LLM ZDR, texte seul.                                                                                                                                                                             |
+| `tooling/eval`            | Harness d'évaluation de l'IA (golden set, LLM-juge, non-régression).                                                                                                                                                                                 |
 
 ### Deux régimes de test, jamais mélangés
 
@@ -93,7 +93,7 @@ Une règle `dependency-cruiser` casse le build si le `core` importe le moindre a
 
 - **Node.js ≥ 22** et **pnpm 11** (via `corepack enable pnpm`)
 - Un navigateur avec **WebGPU** de préférence (repli WASM automatique sinon)
-- Pour la correction cloud : une clé **Anthropic** (voir ci-dessous). *Sans clé, la boucle STT + prononciation + SRS fonctionne ; seule la correction LLM cloud est indisponible.*
+- Pour la correction cloud : une clé **Anthropic** (voir ci-dessous). _Sans clé, la boucle STT + prononciation + SRS fonctionne ; seule la correction LLM cloud est indisponible._
 
 ### Installation
 
@@ -161,7 +161,7 @@ Le développement suit un plan de sprints strict (voir [`specs/SPRINTS.md`](spec
 - **Sprint 2** — MVP : la boucle de correction (enregistrer → diff) · ✅
 - **Sprint 3** — SRS + rétention (le fossé) · ✅
 - **Sprint 4** — Desktop : le 100 % local devient réel · 🚧
-- **Sprint 5** — Prononciation (TTS, tap-sur-mot, ear-compare) · ✅ *web ; natif desktop différé*
+- **Sprint 5** — Prononciation (TTS, tap-sur-mot, ear-compare) · ✅ _web ; natif desktop différé_
 
 **Hors périmètre actuel** : scoring chiffré, mobile (RN), sync E2E, auth/billing SaaS, correction multi-niveaux, UK/US.
 
@@ -184,4 +184,4 @@ La source de vérité du projet vit dans `specs/`, dans cet ordre de priorité :
 
 ---
 
-*Projet privé — code et identifiants en anglais, interface en français.*
+_Projet privé — code et identifiants en anglais, interface en français._

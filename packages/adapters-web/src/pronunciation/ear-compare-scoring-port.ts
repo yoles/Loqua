@@ -1,8 +1,4 @@
-import type {
-  PronunciationScoringPort,
-  RuntimeCapability,
-  UnscoredComparison,
-} from '@loqua/core';
+import type { PronunciationScoringPort, RuntimeCapability, UnscoredComparison } from '@loqua/core';
 
 const CAPABILITY: RuntimeCapability = {
   available: true,

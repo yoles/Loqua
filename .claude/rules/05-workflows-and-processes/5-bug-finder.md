@@ -4,6 +4,7 @@ portée: débogage
 ---
 
 Protocole :
+
 - Reformuler le problème avec ses propres mots
 - Tracer le chemin d'exécution entre fichiers (diagramme mermaid si multi-fichiers)
 - Examiner les fichiers pertinents (commencer par le `core` : la logique métier y vit)
@@ -12,6 +13,7 @@ Protocole :
 - Attendre la validation de l'utilisateur avant de modifier le code
 
 Spécifique Loqua :
+
 - Bug de logique métier trouvé dans un adapter/app = double bug : corriger ET rapatrier la logique dans `core`
 - Reproduire d'abord par un test qui échoue (le fix le fait passer)
 - Comportement non déterministe suspect → chercher un `Date.now()`/`Math.random()` non injecté

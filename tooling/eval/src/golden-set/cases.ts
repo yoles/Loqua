@@ -7,7 +7,10 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'standup-01',
     scenario: 'standup',
-    input: { text: 'Yesterday I have worked on the login bug and I have fixed it', variant: 'en-US' },
+    input: {
+      text: 'Yesterday I have worked on the login bug and I have fixed it',
+      variant: 'en-US',
+    },
     mustDetect: ['tense'],
     referenceCorrection: 'Yesterday I worked on the login bug and fixed it',
   },
@@ -35,42 +38,60 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'standup-05',
     scenario: 'standup',
-    input: { text: 'I have a doubt about the API contract for the payment service', variant: 'en-US' },
+    input: {
+      text: 'I have a doubt about the API contract for the payment service',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom'],
-    referenceCorrection: "I have some concerns about the API contract for the payment service",
+    referenceCorrection: 'I have some concerns about the API contract for the payment service',
   },
   {
     id: 'standup-06',
     scenario: 'standup',
-    input: { text: 'The CI is red since yesterday evening, someone can take a look', variant: 'en-US' },
+    input: {
+      text: 'The CI is red since yesterday evening, someone can take a look',
+      variant: 'en-US',
+    },
     mustDetect: ['tense', 'syntax'],
     referenceCorrection: 'The CI has been red since yesterday evening — could someone take a look?',
   },
   {
     id: 'standup-07',
     scenario: 'standup',
-    input: { text: 'I finished the feature but rests the documentation to write', variant: 'en-US' },
+    input: {
+      text: 'I finished the feature but rests the documentation to write',
+      variant: 'en-US',
+    },
     mustDetect: ['word-order'],
     referenceCorrection: 'I finished the feature but the documentation still needs to be written',
   },
   {
     id: 'standup-08',
     scenario: 'standup',
-    input: { text: 'Actually I am working on refactoring of authentication module', variant: 'en-US' },
+    input: {
+      text: 'Actually I am working on refactoring of authentication module',
+      variant: 'en-US',
+    },
     mustDetect: ['vocabulary', 'article'],
     referenceCorrection: "Currently I'm working on refactoring the authentication module",
   },
   {
     id: 'standup-09',
     scenario: 'standup',
-    input: { text: 'No blocker for me, I continue on same subject than yesterday', variant: 'en-US' },
+    input: {
+      text: 'No blocker for me, I continue on same subject than yesterday',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: "No blockers for me — I'm continuing on the same topic as yesterday",
   },
   {
     id: 'standup-10',
     scenario: 'standup',
-    input: { text: 'I propose we discuss about the database schema after the standup', variant: 'en-US' },
+    input: {
+      text: 'I propose we discuss about the database schema after the standup',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'I suggest we discuss the database schema after the standup',
   },
@@ -84,7 +105,10 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'standup-12',
     scenario: 'standup',
-    input: { text: 'We are late on the planning because the specs changed again', variant: 'en-US' },
+    input: {
+      text: 'We are late on the planning because the specs changed again',
+      variant: 'en-US',
+    },
     mustDetect: ['vocabulary'],
     referenceCorrection: "We're behind schedule because the specs changed again",
   },
@@ -93,21 +117,30 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'review-01',
     scenario: 'code-review',
-    input: { text: 'This function it is too much complicated, you should split it', variant: 'en-US' },
+    input: {
+      text: 'This function it is too much complicated, you should split it',
+      variant: 'en-US',
+    },
     mustDetect: ['syntax'],
     referenceCorrection: 'This function is way too complicated — you should split it',
   },
   {
     id: 'review-02',
     scenario: 'code-review',
-    input: { text: 'Why you did not use the existing helper for parsing the date', variant: 'en-US' },
+    input: {
+      text: 'Why you did not use the existing helper for parsing the date',
+      variant: 'en-US',
+    },
     mustDetect: ['word-order'],
     referenceCorrection: "Why didn't you use the existing date-parsing helper?",
   },
   {
     id: 'review-03',
     scenario: 'code-review',
-    input: { text: 'I think we should to extract this logic in a separate service', variant: 'en-US' },
+    input: {
+      text: 'I think we should to extract this logic in a separate service',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'I think we should extract this logic into a separate service',
   },
@@ -121,14 +154,20 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'review-05',
     scenario: 'code-review',
-    input: { text: 'You forgot to add test for the error case when the user is null', variant: 'en-US' },
+    input: {
+      text: 'You forgot to add test for the error case when the user is null',
+      variant: 'en-US',
+    },
     mustDetect: ['article'],
     referenceCorrection: 'You forgot to add a test for the error case when the user is null',
   },
   {
     id: 'review-06',
     scenario: 'code-review',
-    input: { text: 'Here you mutate the state directly what can cause the render bugs', variant: 'en-US' },
+    input: {
+      text: 'Here you mutate the state directly what can cause the render bugs',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar', 'article'],
     referenceCorrection: 'Here you mutate the state directly, which can cause render bugs',
   },
@@ -142,7 +181,10 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'review-08',
     scenario: 'code-review',
-    input: { text: 'Please precise in the comment why this timeout is necessary', variant: 'en-US' },
+    input: {
+      text: 'Please precise in the comment why this timeout is necessary',
+      variant: 'en-US',
+    },
     mustDetect: ['vocabulary'],
     referenceCorrection: 'Please clarify in the comment why this timeout is necessary',
   },
@@ -156,21 +198,30 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'review-10',
     scenario: 'code-review',
-    input: { text: 'This test is flaky since we have merged the parallel runner', variant: 'en-US' },
+    input: {
+      text: 'This test is flaky since we have merged the parallel runner',
+      variant: 'en-US',
+    },
     mustDetect: ['tense'],
     referenceCorrection: 'This test has been flaky since we merged the parallel runner',
   },
   {
     id: 'review-11',
     scenario: 'code-review',
-    input: { text: 'I am not sure to understand why we need this abstraction here', variant: 'en-US' },
+    input: {
+      text: 'I am not sure to understand why we need this abstraction here',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: "I'm not sure I understand why we need this abstraction here",
   },
   {
     id: 'review-12',
     scenario: 'code-review',
-    input: { text: 'Attention, this endpoint is called also by the mobile application', variant: 'en-US' },
+    input: {
+      text: 'Attention, this endpoint is called also by the mobile application',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom', 'word-order'],
     referenceCorrection: 'Careful — this endpoint is also called by the mobile app',
   },
@@ -179,28 +230,40 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'incident-01',
     scenario: 'incident',
-    input: { text: 'The production is down since twenty minutes, we investigate', variant: 'en-US' },
+    input: {
+      text: 'The production is down since twenty minutes, we investigate',
+      variant: 'en-US',
+    },
     mustDetect: ['tense', 'grammar'],
     referenceCorrection: "Production has been down for twenty minutes — we're investigating",
   },
   {
     id: 'incident-02',
     scenario: 'incident',
-    input: { text: 'The problem come from a migration who locked the users table', variant: 'en-US' },
+    input: {
+      text: 'The problem come from a migration who locked the users table',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'The problem comes from a migration that locked the users table',
   },
   {
     id: 'incident-03',
     scenario: 'incident',
-    input: { text: 'We have rollback the release and the errors stopped immediately', variant: 'en-US' },
+    input: {
+      text: 'We have rollback the release and the errors stopped immediately',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'We rolled back the release and the errors stopped immediately',
   },
   {
     id: 'incident-04',
     scenario: 'incident',
-    input: { text: 'The monitoring did not alerted us because the threshold was too high', variant: 'en-US' },
+    input: {
+      text: 'The monitoring did not alerted us because the threshold was too high',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: "The monitoring didn't alert us because the threshold was too high",
   },
@@ -214,14 +277,20 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'incident-06',
     scenario: 'incident',
-    input: { text: 'The database was saturated because of a query not optimized', variant: 'en-US' },
+    input: {
+      text: 'The database was saturated because of a query not optimized',
+      variant: 'en-US',
+    },
     mustDetect: ['word-order'],
     referenceCorrection: 'The database was saturated because of an unoptimized query',
   },
   {
     id: 'incident-07',
     scenario: 'incident',
-    input: { text: 'Since the deploy of Friday, the latency has doubled on the checkout', variant: 'en-US' },
+    input: {
+      text: 'Since the deploy of Friday, the latency has doubled on the checkout',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom'],
     referenceCorrection: "Since Friday's deploy, latency on checkout has doubled",
   },
@@ -235,28 +304,40 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'incident-09',
     scenario: 'incident',
-    input: { text: 'The service restarted himself three times before staying stable', variant: 'en-US' },
+    input: {
+      text: 'The service restarted himself three times before staying stable',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'The service restarted itself three times before stabilizing',
   },
   {
     id: 'incident-10',
     scenario: 'incident',
-    input: { text: 'It is the cache which has hidden the problem during two days', variant: 'en-US' },
+    input: {
+      text: 'It is the cache which has hidden the problem during two days',
+      variant: 'en-US',
+    },
     mustDetect: ['syntax', 'tense'],
     referenceCorrection: 'The cache hid the problem for two days',
   },
   {
     id: 'incident-11',
     scenario: 'incident',
-    input: { text: 'We took the decision to disable the feature flag for all users', variant: 'en-US' },
+    input: {
+      text: 'We took the decision to disable the feature flag for all users',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom'],
     referenceCorrection: 'We decided to disable the feature flag for all users',
   },
   {
     id: 'incident-12',
     scenario: 'incident',
-    input: { text: 'The postmortem will be write tomorrow with all the timeline', variant: 'en-US' },
+    input: {
+      text: 'The postmortem will be write tomorrow with all the timeline',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'The post-mortem will be written tomorrow with the full timeline',
   },
@@ -265,9 +346,12 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'interview-01',
     scenario: 'interview',
-    input: { text: 'I have ten years experience in backend development with Java and Go', variant: 'en-US' },
+    input: {
+      text: 'I have ten years experience in backend development with Java and Go',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
-    referenceCorrection: "I have ten years of experience in backend development with Java and Go",
+    referenceCorrection: 'I have ten years of experience in backend development with Java and Go',
   },
   {
     id: 'interview-02',
@@ -279,42 +363,60 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'interview-03',
     scenario: 'interview',
-    input: { text: 'I am very interesting by the position because I love distributed systems', variant: 'en-US' },
+    input: {
+      text: 'I am very interesting by the position because I love distributed systems',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: "I'm very interested in the position because I love distributed systems",
   },
   {
     id: 'interview-04',
     scenario: 'interview',
-    input: { text: 'I have the habit to work in agile teams with two weeks sprints', variant: 'en-US' },
+    input: {
+      text: 'I have the habit to work in agile teams with two weeks sprints',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom'],
     referenceCorrection: "I'm used to working in agile teams with two-week sprints",
   },
   {
     id: 'interview-05',
     scenario: 'interview',
-    input: { text: 'My actual company does not let me work on open source projects', variant: 'en-US' },
+    input: {
+      text: 'My actual company does not let me work on open source projects',
+      variant: 'en-US',
+    },
     mustDetect: ['vocabulary'],
     referenceCorrection: "My current company doesn't let me work on open-source projects",
   },
   {
     id: 'interview-06',
     scenario: 'interview',
-    input: { text: 'I searched a lot of informations about your architecture before coming', variant: 'en-US' },
+    input: {
+      text: 'I searched a lot of informations about your architecture before coming',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'I looked up a lot of information about your architecture before coming',
   },
   {
     id: 'interview-07',
     scenario: 'interview',
-    input: { text: 'Can you explain me how the on-call rotation works in your team', variant: 'en-US' },
+    input: {
+      text: 'Can you explain me how the on-call rotation works in your team',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'Could you explain to me how the on-call rotation works in your team?',
   },
   {
     id: 'interview-08',
     scenario: 'interview',
-    input: { text: 'I quitted my previous company because there was no technical challenge', variant: 'en-US' },
+    input: {
+      text: 'I quitted my previous company because there was no technical challenge',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'I left my previous company because there was no technical challenge',
   },
@@ -335,30 +437,43 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'interview-11',
     scenario: 'interview',
-    input: { text: 'I am comfortable to lead technical discussions with the stakeholders', variant: 'en-US' },
+    input: {
+      text: 'I am comfortable to lead technical discussions with the stakeholders',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: "I'm comfortable leading technical discussions with stakeholders",
   },
   {
     id: 'interview-12',
     scenario: 'interview',
-    input: { text: 'Since I am child I always liked to understand how things work', variant: 'en-US' },
+    input: {
+      text: 'Since I am child I always liked to understand how things work',
+      variant: 'en-US',
+    },
     mustDetect: ['tense', 'article'],
-    referenceCorrection: "Ever since I was a child, I've always liked understanding how things work",
+    referenceCorrection:
+      "Ever since I was a child, I've always liked understanding how things work",
   },
 
   // ---------- Décision d'archi (12) ----------
   {
     id: 'archi-01',
     scenario: 'archi',
-    input: { text: 'We choosed an event driven architecture for decouple the services', variant: 'en-US' },
+    input: {
+      text: 'We choosed an event driven architecture for decouple the services',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'We chose an event-driven architecture to decouple the services',
   },
   {
     id: 'archi-02',
     scenario: 'archi',
-    input: { text: 'The advantage of this solution is that she scales horizontally', variant: 'en-US' },
+    input: {
+      text: 'The advantage of this solution is that she scales horizontally',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'The advantage of this solution is that it scales horizontally',
   },
@@ -372,63 +487,90 @@ export const GOLDEN_SET: readonly GoldenCase[] = [
   {
     id: 'archi-04',
     scenario: 'archi',
-    input: { text: 'This permits to deploy each service independently of the others', variant: 'en-US' },
+    input: {
+      text: 'This permits to deploy each service independently of the others',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'This lets us deploy each service independently of the others',
   },
   {
     id: 'archi-05',
     scenario: 'archi',
-    input: { text: 'The monolith becomes too much big for be maintained by one team', variant: 'en-US' },
+    input: {
+      text: 'The monolith becomes too much big for be maintained by one team',
+      variant: 'en-US',
+    },
     mustDetect: ['syntax', 'grammar'],
     referenceCorrection: 'The monolith is getting too big to be maintained by one team',
   },
   {
     id: 'archi-06',
     scenario: 'archi',
-    input: { text: 'We hesitate between Postgres and Dynamo for the orders storage', variant: 'en-US' },
+    input: {
+      text: 'We hesitate between Postgres and Dynamo for the orders storage',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom'],
     referenceCorrection: "We're torn between Postgres and Dynamo for order storage",
   },
   {
     id: 'archi-07',
     scenario: 'archi',
-    input: { text: 'At the end, the simplicity of the design is more important that the performance', variant: 'en-US' },
+    input: {
+      text: 'At the end, the simplicity of the design is more important that the performance',
+      variant: 'en-US',
+    },
     mustDetect: ['idiom', 'grammar'],
     referenceCorrection: 'In the end, the simplicity of the design matters more than performance',
   },
   {
     id: 'archi-08',
     scenario: 'archi',
-    input: { text: 'The cache layer permit us to support ten times more of traffic', variant: 'en-US' },
+    input: {
+      text: 'The cache layer permit us to support ten times more of traffic',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'The cache layer lets us handle ten times more traffic',
   },
   {
     id: 'archi-09',
     scenario: 'archi',
-    input: { text: 'It is a compromise between the consistency and the availability', variant: 'en-US' },
+    input: {
+      text: 'It is a compromise between the consistency and the availability',
+      variant: 'en-US',
+    },
     mustDetect: ['vocabulary', 'article'],
     referenceCorrection: "It's a trade-off between consistency and availability",
   },
   {
     id: 'archi-10',
     scenario: 'archi',
-    input: { text: 'If we would use a queue here, the retry logic would be much simpler', variant: 'en-US' },
+    input: {
+      text: 'If we would use a queue here, the retry logic would be much simpler',
+      variant: 'en-US',
+    },
     mustDetect: ['grammar'],
     referenceCorrection: 'If we used a queue here, the retry logic would be much simpler',
   },
   {
     id: 'archi-11',
     scenario: 'archi',
-    input: { text: 'I am not fan of this pattern because he hides the complexity', variant: 'en-US' },
+    input: {
+      text: 'I am not fan of this pattern because he hides the complexity',
+      variant: 'en-US',
+    },
     mustDetect: ['article', 'grammar'],
     referenceCorrection: "I'm not a fan of this pattern because it hides the complexity",
   },
   {
     id: 'archi-12',
     scenario: 'archi',
-    input: { text: 'We stay on the actual solution until we have more informations', variant: 'en-US' },
+    input: {
+      text: 'We stay on the actual solution until we have more informations',
+      variant: 'en-US',
+    },
     mustDetect: ['vocabulary', 'grammar'],
     referenceCorrection: "We'll stick with the current solution until we have more information",
   },

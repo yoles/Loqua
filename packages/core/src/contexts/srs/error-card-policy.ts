@@ -47,10 +47,7 @@ async function createCardIfAbsent(
   await deps.storage.put(CARDS_COLLECTION, id, card);
 }
 
-export function attachErrorCardCreation(
-  bus: EventBus,
-  deps: ErrorCardPolicyDeps,
-): ErrorCardPolicy {
+export function attachErrorCardCreation(bus: EventBus, deps: ErrorCardPolicyDeps): ErrorCardPolicy {
   // Le bus est synchrone, le storage asynchrone : les créations s'enchaînent
   // dans l'ordre d'arrivée ; `settled()` attend la fin (tests, teardown).
   let queue: Promise<void> = Promise.resolve();

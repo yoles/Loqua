@@ -289,9 +289,7 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     runner.startRecording();
     await runner.finishRecording(clip);
 
-    expect(completed).toEqual([
-      { kind: 'SessionCompleted', sessionId: 'clip-1', spokenMs: 1000 },
-    ]);
+    expect(completed).toEqual([{ kind: 'SessionCompleted', sessionId: 'clip-1', spokenMs: 1000 }]);
   });
 
   it('publishes nothing on failure and works without a bus', async () => {

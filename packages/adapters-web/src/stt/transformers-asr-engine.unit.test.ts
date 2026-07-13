@@ -48,7 +48,9 @@ describe('transformers.js ASR engine factory', () => {
     stubGpuAdapter({});
     pipelineMock.mockRejectedValue(new Error('wasm session also broken'));
 
-    await expect(createTransformersAsrEngineFactory()()).rejects.toThrow(/wasm session also broken/);
+    await expect(createTransformersAsrEngineFactory()()).rejects.toThrow(
+      /wasm session also broken/,
+    );
     expect(pipelineMock).toHaveBeenCalledTimes(2);
   });
 

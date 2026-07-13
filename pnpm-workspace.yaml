@@ -1,8 +1,8 @@
 packages:
-  - "packages/*"
-  - "apps/*"
-  - "services/*"
-  - "tooling/*"
+  - 'packages/*'
+  - 'apps/*'
+  - 'services/*'
+  - 'tooling/*'
 allowBuilds:
   esbuild: true
   # deps natives Node de transformers.js — inutiles (adapter navigateur only)
@@ -10,4 +10,4 @@ allowBuilds:
   protobufjs: false
   sharp: false
   workerd: true # runtime de wrangler dev (services/api)
-  "@tauri-apps/cli": true # binaire du CLI Tauri (apps/desktop)
+  '@tauri-apps/cli': true # binaire du CLI Tauri (apps/desktop)

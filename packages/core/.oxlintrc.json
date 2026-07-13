@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "rules": {
+    "no-restricted-globals": [
+      "error",
+      { "name": "fetch", "message": "core est TS pur : fetch interdit (invariant #4)" },
+      { "name": "window", "message": "core ne connaît jamais le DOM (invariant #4)" },
+      { "name": "document", "message": "core ne connaît jamais le DOM (invariant #4)" },
+      {
+        "name": "localStorage",
+        "message": "core ne connaît jamais le stockage navigateur — passer par StoragePort"
+      },
+      {
+        "name": "sessionStorage",
+        "message": "core ne connaît jamais le stockage navigateur — passer par StoragePort"
+      }
+    ]
+  }
+}

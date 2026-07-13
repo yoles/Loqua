@@ -13,7 +13,9 @@ export interface Streak {
 
 export function makeStreak(parts: { days: number; lastEarnedDay: LocalDay | null }): Streak {
   if (!Number.isInteger(parts.days) || parts.days < 0) {
-    throw new GamificationError(`a streak needs a non-negative integer day count, got ${parts.days}`);
+    throw new GamificationError(
+      `a streak needs a non-negative integer day count, got ${parts.days}`,
+    );
   }
   if (parts.lastEarnedDay !== null && !LOCAL_DAY_PATTERN.test(parts.lastEarnedDay)) {
     throw new GamificationError(`a local day must be YYYY-MM-DD, got "${parts.lastEarnedDay}"`);

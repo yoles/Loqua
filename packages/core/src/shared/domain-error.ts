@@ -1,11 +1,5 @@
 export type BoundedContext =
-  | 'shared'
-  | 'correction'
-  | 'pronunciation'
-  | 'srs'
-  | 'gamification'
-  | 'identity'
-  | 'pipeline';
+  'shared' | 'correction' | 'pronunciation' | 'srs' | 'gamification' | 'identity' | 'pipeline';
 
 export abstract class DomainError extends Error {
   protected constructor(

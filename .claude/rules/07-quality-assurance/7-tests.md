@@ -1,9 +1,10 @@
 ---
 description: APPLIQUER les standards de test WHEN écrire un test (core, adapter, UI)
-portée: "**/*.test.ts"
+portée: '**/*.test.ts'
 ---
 
 Général :
+
 - Test co-localisé avec le code testé (même dossier de feature/context)
 - Grouper avec `describe` par comportement, pas par méthode
 - Vitest partout ; le `core` se teste en Node pur, sans navigateur
@@ -17,6 +18,7 @@ Général :
 - Tester les cas limites et les chemins d'erreur, pas seulement le chemin heureux
 
 Core (`packages/core/**/*.unit.test.ts`) :
+
 - Une unité fonctionnelle à la fois ; les seules doublures sont des implémentations en mémoire des PORTS
 - Jamais de mock de module (`vi.mock`) dans le core — l'injection suffit
 - `ClockPort` factice piloté par le test (avancer le temps explicitement)
@@ -25,6 +27,7 @@ Core (`packages/core/**/*.unit.test.ts`) :
 - Immutabilité : un événement/VO reçu ne doit pas être mutable
 
 Intégration / adapters (`**/*.integration.test.ts`) :
+
 - Vérifier qu'un adapter honore le CONTRAT de son port, pas la lib sous-jacente
 - Storage : vraie base (SQLite en mémoire/OPFS simulé) — write/read/query/delete/eraseAll via le port
 - Fournisseur LLM cloud : TOUJOURS mocké ; asserter que la requête ne contient que du texte autorisé
@@ -34,6 +37,7 @@ Intégration / adapters (`**/*.integration.test.ts`) :
 - Setup/teardown propres, état remis à zéro entre tests
 
 UI (`apps/web/**/*.test.*`, `packages/ui-web/**/*.test.*`) :
+
 - Tester les smart components/features : orchestration, réaction aux états du pipeline
 - NE PAS tester les composants purement présentationnels ; NE PAS re-tester la logique métier déjà couverte dans `core`
 - Mocker uniquement les frontières : adapters (via l'injection du composition root), APIs navigateur (micro, OPFS) — injecter des ports factices plutôt que mocker des modules

@@ -113,11 +113,7 @@ function nextEase(ease: number, grade: ReviewGrade): number {
   return ease;
 }
 
-export function applyReview(
-  scheduling: Scheduling,
-  grade: ReviewGrade,
-  nowMs: number,
-): Scheduling {
+export function applyReview(scheduling: Scheduling, grade: ReviewGrade, nowMs: number): Scheduling {
   const intervalDays = nextIntervalDays(scheduling, grade);
   return makeScheduling({
     ease: nextEase(scheduling.ease, grade),

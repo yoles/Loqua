@@ -6,10 +6,17 @@
     "build": "pnpm lint:deps && turbo run build",
     "test": "turbo run test",
     "eval": "pnpm --filter @loqua/eval eval",
-    "lint:deps": "depcruise packages apps services tooling --config .dependency-cruiser.cjs"
+    "lint": "oxlint",
+    "lint:types": "oxlint --type-aware",
+    "lint:deps": "depcruise packages apps services tooling --config .dependency-cruiser.cjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "dependency-cruiser": "^18.0.0",
+    "oxlint": "^1.73.0",
+    "oxlint-tsgolint": "^0.24.0",
+    "prettier": "^3.9.5",
     "turbo": "^2.5.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"

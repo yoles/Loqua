@@ -30,16 +30,16 @@
 
 ## 2. Décisions arrêtées
 
-| # | Décision | Choix |
-|---|---|---|
-| 1 | Topologie runtime | **Option B** — client local + backend fin. Construite pour que le **100 % local (A) soit un sous-cas** (débrancher le proxy LLM). |
-| 2 | Plateformes | **Web (vitrine + lite)** & **Desktop Tauri (foyer du 100 % local)** en parallèle. Mobile (RN/Expo) plus tard. |
-| 3 | Stack client | **Next.js (web) + Tauri (desktop) d'abord.** Même frontend React, adapters substitués. |
-| 4 | Machine à états | **Maison** (reducer TS pur dans le `core`). Migration XState possible plus tard, derrière la même frontière. |
-| 5 | Persistance | **SQLite partout** (SQLite-WASM + OPFS sur web ; SQLite/SQLCipher natif desktop/mobile) derrière `StoragePort`. |
-| 6 | Scoring | **`ear-compare` durable** (aucun modèle) — socle V1. **Spike GOP fait : NO-GO** pour le scoring chiffré non-supervisé (cf. SPIKES §7). Le score chiffré n'est atteignable que via un scorer **supervisé (GOPT)** — piste R&D non promise, hors MVP. |
-| 7 | Sync SaaS | **Local-only maintenant.** Invariants d'effacement/copie-de-valeur figés dès aujourd'hui. Sync E2E = feature ultérieure. |
-| — | LLM correction | **Cloud-ZDR opt-in par défaut (Option B)**, adapter **local dispo sur desktop** (Tauri, gros modèles). Choisi par plateforme + consentement. |
+| #   | Décision          | Choix                                                                                                                                                                                                                                               |
+| --- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Topologie runtime | **Option B** — client local + backend fin. Construite pour que le **100 % local (A) soit un sous-cas** (débrancher le proxy LLM).                                                                                                                   |
+| 2   | Plateformes       | **Web (vitrine + lite)** & **Desktop Tauri (foyer du 100 % local)** en parallèle. Mobile (RN/Expo) plus tard.                                                                                                                                       |
+| 3   | Stack client      | **Next.js (web) + Tauri (desktop) d'abord.** Même frontend React, adapters substitués.                                                                                                                                                              |
+| 4   | Machine à états   | **Maison** (reducer TS pur dans le `core`). Migration XState possible plus tard, derrière la même frontière.                                                                                                                                        |
+| 5   | Persistance       | **SQLite partout** (SQLite-WASM + OPFS sur web ; SQLite/SQLCipher natif desktop/mobile) derrière `StoragePort`.                                                                                                                                     |
+| 6   | Scoring           | **`ear-compare` durable** (aucun modèle) — socle V1. **Spike GOP fait : NO-GO** pour le scoring chiffré non-supervisé (cf. SPIKES §7). Le score chiffré n'est atteignable que via un scorer **supervisé (GOPT)** — piste R&D non promise, hors MVP. |
+| 7   | Sync SaaS         | **Local-only maintenant.** Invariants d'effacement/copie-de-valeur figés dès aujourd'hui. Sync E2E = feature ultérieure.                                                                                                                            |
+| —   | LLM correction    | **Cloud-ZDR opt-in par défaut (Option B)**, adapter **local dispo sur desktop** (Tauri, gros modèles). Choisi par plateforme + consentement.                                                                                                        |
 
 ---
 
@@ -74,11 +74,11 @@
 
 ## 4. Stratégie plateformes & runtimes
 
-| Plateforme | Runtime des modèles | LLM correction par défaut | Rôle |
-|---|---|---|---|
-| **Web** | `transformers.js` (ONNX + WebGPU), `kokoro.js`, WebLLM | **Cloud-ZDR opt-in** (WebLLM possible si bonne machine) | Vitrine, essai rapide, entrée "lite" |
-| **Desktop (Tauri)** | Sidecars natifs Rust : `whisper.cpp`, `llama.cpp`, Kokoro (wav2vec2 seulement si piste scoring supervisée ouverte, cf. §12) | **Local** (jusqu'à 14-27B) — 100 % local possible | Foyer du 100 % local |
-| **Mobile (plus tard)** | WhisperKit, `llama.rn`, Piper | Cloud-ZDR opt-in | Grand public |
+| Plateforme             | Runtime des modèles                                                                                                         | LLM correction par défaut                               | Rôle                                 |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------ |
+| **Web**                | `transformers.js` (ONNX + WebGPU), `kokoro.js`, WebLLM                                                                      | **Cloud-ZDR opt-in** (WebLLM possible si bonne machine) | Vitrine, essai rapide, entrée "lite" |
+| **Desktop (Tauri)**    | Sidecars natifs Rust : `whisper.cpp`, `llama.cpp`, Kokoro (wav2vec2 seulement si piste scoring supervisée ouverte, cf. §12) | **Local** (jusqu'à 14-27B) — 100 % local possible       | Foyer du 100 % local                 |
+| **Mobile (plus tard)** | WhisperKit, `llama.rn`, Piper                                                                                               | Cloud-ZDR opt-in                                        | Grand public                         |
 
 **Principe :** web et desktop **partagent le frontend React et le `core`**. Seuls les adapters injectés diffèrent (composition root par app). Le mobile réécrit l'UI en RN mais réutilise le `core` à 100 %.
 
@@ -116,6 +116,7 @@
 ```
 
 ### Règle de dépendance (imposée par `dependency-cruiser` en CI)
+
 - `core` n'importe **jamais** un adapter, une app, un framework, ni une API de plateforme.
 - Les adapters implémentent les ports de `core/ports`.
 - Les apps sont le **composition root** : elles instancient les adapters et les injectent dans les use-cases du `core`.
@@ -128,24 +129,29 @@
 Cinq contextes, langages distincts. Ne pas les fusionner.
 
 ### Correction
+
 - **Langage :** `Utterance`, `Variant` (en-US | en-GB), `CorrectionLevel` (natural pour le MVP), `Correction`, `ErrorType`, `Explanation`, `CorrectedUtterance`.
 - **Agrégat racine :** `Session` (contient l'audio local ref, le transcript, la correction). Invariant : une `Correction` n'existe que dans une `Session`.
 
 ### Pronunciation Training
+
 - **Langage :** `Word`, `Phoneme`, `IPA`, `Syllable`, `PracticeAttempt`, `ScoreResult | UnscoredComparison`, `MinimalPair` (V2).
 - **Agrégat racine :** `PracticeAttempt`.
 
 ### SRS
+
 - **Langage :** `Card`, `ReviewItem`, `Ease`, `Interval`, `NextReview`, `Lapse`, `ReviewGrade`.
 - **Agrégat racine :** `Card`. **Invariant #6 : la `Card` stocke une copie de valeur** de l'item (mot ou faute), jamais un pointeur vers la `Session`.
 - Algorithme : SM-2 (ou FSRS) — **déterministe, 100 % testable, zéro I/O**.
 
 ### Gamification
+
 - **Langage :** `XP`, `Streak`, `Level`, `Rank`, `Badge`, `Challenge`.
 - **Piloté par événements** (ne lit pas directement les autres contextes).
-- **Règle du Streak à spécifier au test près :** fuseau = fuseau local de l'appareil ; le jour bascule à minuit local ; « ≥ 60 s de parole *détectée* » (pas micro ouvert) ; cumul autorisé sur la journée. À couvrir par tests comportementaux Vitest, un cas par règle (§16).
+- **Règle du Streak à spécifier au test près :** fuseau = fuseau local de l'appareil ; le jour bascule à minuit local ; « ≥ 60 s de parole _détectée_ » (pas micro ouvert) ; cumul autorisé sur la journée. À couvrir par tests comportementaux Vitest, un cas par règle (§16).
 
 ### Identity & Billing
+
 - **Langage :** `Account`, `Subscription`, `Entitlement`, `Consent` (dont consentement biométrique RGPD art. 9).
 - Contexte support. L'`Entitlement` ne nécessite aucune donnée utilisateur.
 
@@ -157,14 +163,14 @@ Cinq contextes, langages distincts. Ne pas les fusionner.
 
 Événements minimaux (le producteur publie, les consommateurs s'abonnent) :
 
-| Événement | Producteur | Consommateurs |
-|---|---|---|
-| `SessionCompleted` | Correction | Gamification (XP), SRS |
-| `ErrorDetected {type, value}` | Correction | SRS (crée une `Card` — copie de valeur) |
-| `PronunciationValidated {word}` | Pronunciation | Gamification, SRS |
-| `SoundMissed {phoneme}` | Pronunciation | SRS |
-| `CardReviewed {grade}` | SRS | Gamification |
-| `ConsentChanged` | Identity | Point de sortie de données (§16) |
+| Événement                       | Producteur    | Consommateurs                           |
+| ------------------------------- | ------------- | --------------------------------------- |
+| `SessionCompleted`              | Correction    | Gamification (XP), SRS                  |
+| `ErrorDetected {type, value}`   | Correction    | SRS (crée une `Card` — copie de valeur) |
+| `PronunciationValidated {word}` | Pronunciation | Gamification, SRS                       |
+| `SoundMissed {phoneme}`         | Pronunciation | SRS                                     |
+| `CardReviewed {grade}`          | SRS           | Gamification                            |
+| `ConsentChanged`                | Identity      | Point de sortie de données (§16)        |
 
 Règle : un événement transporte des **copies de valeur immuables**, jamais des entités mutables d'un autre contexte.
 
@@ -172,17 +178,17 @@ Règle : un événement transporte des **copies de valeur immuables**, jamais de
 
 ## 8. Ports — vue d'ensemble
 
-| Port | Rôle | Adapters (web / tauri / native) |
-|---|---|---|
-| `TranscriptionPort` | audio → texte + timestamps mots | whisper WASM / whisper.cpp / WhisperKit |
-| `CorrectionPort` | texte → correction structurée | WebLLM ou cloud-ZDR / llama.cpp ou cloud / cloud |
-| `SpeechSynthesisPort` | texte → audio | kokoro.js (fallback WebSpeech) / Kokoro natif / Piper |
-| `PhonemizerPort` | mot → IPA (aide prononciation) | kokoro-js phonemize (eSpeak-NG) / eSpeak natif / eSpeak |
-| `PronunciationScoringPort` | audio + mot → `UnscoredComparison` (défaut) | ear-compare (toutes plateformes). `ScoreResult` chiffré conditionné à la piste R&D supervisée — cf. §12 |
-| `StoragePort` | persistance | sqlite-wasm+OPFS / SQLite / SQLCipher |
-| `ModelRuntimePort` | cycle de vie des modèles | download/cache OPFS / filesystem / filesystem |
-| `SyncPort` (plus tard) | push/pull blobs chiffrés | HTTP api |
-| `ClockPort` | temps (streak, SRS) — **injecté**, jamais `Date.now()` direct | système |
+| Port                       | Rôle                                                          | Adapters (web / tauri / native)                                                                         |
+| -------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `TranscriptionPort`        | audio → texte + timestamps mots                               | whisper WASM / whisper.cpp / WhisperKit                                                                 |
+| `CorrectionPort`           | texte → correction structurée                                 | WebLLM ou cloud-ZDR / llama.cpp ou cloud / cloud                                                        |
+| `SpeechSynthesisPort`      | texte → audio                                                 | kokoro.js (fallback WebSpeech) / Kokoro natif / Piper                                                   |
+| `PhonemizerPort`           | mot → IPA (aide prononciation)                                | kokoro-js phonemize (eSpeak-NG) / eSpeak natif / eSpeak                                                 |
+| `PronunciationScoringPort` | audio + mot → `UnscoredComparison` (défaut)                   | ear-compare (toutes plateformes). `ScoreResult` chiffré conditionné à la piste R&D supervisée — cf. §12 |
+| `StoragePort`              | persistance                                                   | sqlite-wasm+OPFS / SQLite / SQLCipher                                                                   |
+| `ModelRuntimePort`         | cycle de vie des modèles                                      | download/cache OPFS / filesystem / filesystem                                                           |
+| `SyncPort` (plus tard)     | push/pull blobs chiffrés                                      | HTTP api                                                                                                |
+| `ClockPort`                | temps (streak, SRS) — **injecté**, jamais `Date.now()` direct | système                                                                                                 |
 
 ---
 
@@ -194,22 +200,31 @@ export type Variant = 'en-US' | 'en-GB';
 export type QualityTier = 'local-basic' | 'local-strong' | 'cloud-native';
 
 export interface RuntimeCapability {
-  available: boolean;          // l'adapter peut-il tourner ici et maintenant ?
+  available: boolean; // l'adapter peut-il tourner ici et maintenant ?
   qualityTier: QualityTier;
   requiresConsentToSendText?: boolean; // true pour l'adapter cloud
 }
 
 export interface AudioClip {
-  id: string;                  // hash du contenu → mémoïsation/idempotence
+  id: string; // hash du contenu → mémoïsation/idempotence
   format: 'wav' | 'webm' | 'pcm';
   sampleRate: number;
-  data: ArrayBuffer;           // reste LOCAL — ne franchit jamais un adapter réseau
+  data: ArrayBuffer; // reste LOCAL — ne franchit jamais un adapter réseau
   durationMs: number;
 }
 
 // ---------- STT ----------
-export interface WordTiming { text: string; startMs: number; endMs: number; confidence?: number; }
-export interface TranscriptionResult { text: string; words: WordTiming[]; language: string; }
+export interface WordTiming {
+  text: string;
+  startMs: number;
+  endMs: number;
+  confidence?: number;
+}
+export interface TranscriptionResult {
+  text: string;
+  words: WordTiming[];
+  language: string;
+}
 
 export interface TranscriptionPort {
   capability(): RuntimeCapability;
@@ -218,20 +233,20 @@ export interface TranscriptionPort {
 
 // ---------- Correction (LLM) ----------
 export type ErrorType =
-  | 'grammar' | 'syntax' | 'vocabulary' | 'idiom' | 'register' | 'word-order' | 'article' | 'tense';
+  'grammar' | 'syntax' | 'vocabulary' | 'idiom' | 'register' | 'word-order' | 'article' | 'tense';
 
 export interface Correction {
   original: string;
   fixed: string;
   type: ErrorType;
-  explanation: string;                       // 1 phrase
+  explanation: string; // 1 phrase
   span?: { startWord: number; endWord: number };
 }
 export interface CorrectionResult {
   variant: Variant;
   correctedText: string;
   corrections: Correction[];
-  qualityTier: QualityTier;                  // le core le connaît et le restitue à l'UI
+  qualityTier: QualityTier; // le core le connaît et le restitue à l'UI
 }
 export interface CorrectionPort {
   capability(): RuntimeCapability;
@@ -252,23 +267,30 @@ export interface PhonemizerPort {
 }
 
 // ---------- Scoring ----------
-export interface PhonemeScore { phoneme: string; score: number; }  // 0..100
+export interface PhonemeScore {
+  phoneme: string;
+  score: number;
+} // 0..100
 export interface ScoreResult {
   kind: 'scored';
-  overall: number;                 // 0..100
+  overall: number; // 0..100
   phonemes: PhonemeScore[];
   worstSyllableIndex?: number;
 }
 export interface UnscoredComparison {
-  kind: 'unscored';                // ear-compare V1 : pas de score, juste l'audio à comparer
+  kind: 'unscored'; // ear-compare V1 : pas de score, juste l'audio à comparer
   referenceClipId: string;
   userClipId: string;
 }
 export interface PronunciationScoringPort {
   capability(): RuntimeCapability;
   // `reference` (TTS) : chemin unscored ear-compare (A/B, lot 5.3). Scored futur : audio vs targetWord/ipa.
-  score(input: { audio: AudioClip; targetWord: string; reference?: AudioClip; ipa?: string }):
-    Promise<ScoreResult | UnscoredComparison>;
+  score(input: {
+    audio: AudioClip;
+    targetWord: string;
+    reference?: AudioClip;
+    ipa?: string;
+  }): Promise<ScoreResult | UnscoredComparison>;
 }
 
 // ---------- Storage ----------
@@ -277,11 +299,16 @@ export interface StoragePort {
   put<T>(collection: string, id: string, value: T): Promise<void>;
   query<T>(collection: string, filter: Record<string, unknown>): Promise<T[]>;
   delete(collection: string, id: string): Promise<void>;
-  eraseAll(): Promise<void>;       // droit à l'effacement (invariant #6)
+  eraseAll(): Promise<void>; // droit à l'effacement (invariant #6)
 }
 
 // ---------- Model runtime ----------
-export interface ModelDescriptor { id: string; task: 'stt'|'tts'|'llm'|'scoring'; sizeBytes: number; checksum: string; }
+export interface ModelDescriptor {
+  id: string;
+  task: 'stt' | 'tts' | 'llm' | 'scoring';
+  sizeBytes: number;
+  checksum: string;
+}
 export interface ModelRuntimePort {
   list(): ModelDescriptor[];
   isReady(modelId: string): Promise<boolean>;
@@ -290,7 +317,10 @@ export interface ModelRuntimePort {
 }
 
 // ---------- Clock (déterminisme des tests) ----------
-export interface ClockPort { now(): number; timezone(): string; }
+export interface ClockPort {
+  now(): number;
+  timezone(): string;
+}
 ```
 
 **Règle du `qualityTier` :** aucun consommateur ne suppose une qualité. Le `core` sait quel tier a produit la correction et l'expose à l'UI (« correction en mode local — activer la correction avancée ? »).
@@ -306,7 +336,7 @@ IDLE
  └─(RecordStarted)→ RECORDING
      └─(RecordStopped)→ TRANSCRIBING ──(TranscribeOk)→ TRANSCRIBED
           │                              └─(TranscribeErr)→ FAILED_STT (retry|abort)
-          └─(userEdit?)                  
+          └─(userEdit?)
      TRANSCRIBED ──(CorrectStarted)→ CORRECTING
           ├─(CorrectOk)→ CORRECTED
           └─(CorrectErr)→ FAILED_LLM (retry | dégrader vers adapter local | proposer opt-in cloud)
@@ -316,6 +346,7 @@ IDLE
 ```
 
 **Règles obligatoires :**
+
 - **Idempotence :** `TranscriptionResult` est mémoïsé sur `AudioClip.id` (hash) → jamais re-transcrire le même audio. Idem correction sur (hash transcript + variant).
 - **Politique d'échec par transition** explicite (retry N fois / dégrader / demander à l'utilisateur). Pas de silencieux.
 - **Reprise :** l'audio et l'état courant sont persistés (`StoragePort`) ; à la réouverture, le runner reprend à la dernière transition validée.
@@ -377,12 +408,12 @@ Les consommateurs (SRS, gamification) gèrent `UnscoredComparison` **dès mainte
 
 **Deux régimes, jamais mélangés.**
 
-| Cible | Régime | Outillage |
-|---|---|---|
-| SRS, gamification, streak, machine à états, taxonomie, `egressGuard` | **TDD + tests comportementaux** (BDD-style : `describe`/`it` en phrases du langage ubiquitaire ; pas de format Gherkin/`.feature` dédié) | Vitest ; `core` testé en Node pur ; `ClockPort` injecté (pas de `Date.now`) |
-| Sortie JSON de correction | **Contrat strict** | Zod (schéma = §9) ; test de validité + gestion du malformé (les LLM en produisent) |
-| Qualité de correction (LLM) | **Eval harness** | `/tooling/eval` : golden set 50-100 énoncés dev + refs, assertions **sémantiques**, LLM-juge, non-régression |
-| Scoring (GOP) | **Eval harness** | Corrélation vs corpus annoté (SpeechOcean762) |
+| Cible                                                                | Régime                                                                                                                                   | Outillage                                                                                                    |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| SRS, gamification, streak, machine à états, taxonomie, `egressGuard` | **TDD + tests comportementaux** (BDD-style : `describe`/`it` en phrases du langage ubiquitaire ; pas de format Gherkin/`.feature` dédié) | Vitest ; `core` testé en Node pur ; `ClockPort` injecté (pas de `Date.now`)                                  |
+| Sortie JSON de correction                                            | **Contrat strict**                                                                                                                       | Zod (schéma = §9) ; test de validité + gestion du malformé (les LLM en produisent)                           |
+| Qualité de correction (LLM)                                          | **Eval harness**                                                                                                                         | `/tooling/eval` : golden set 50-100 énoncés dev + refs, assertions **sémantiques**, LLM-juge, non-régression |
+| Scoring (GOP)                                                        | **Eval harness**                                                                                                                         | Corrélation vs corpus annoté (SpeechOcean762)                                                                |
 
 **Règle :** `/tooling/eval` existe **dès le premier prompt de correction**. Tout changement de modèle local/prompt passe l'eval avant merge.
 
@@ -415,32 +446,39 @@ Les consommateurs (SRS, gamification) gèrent `UnscoredComparison` **dès mainte
 ## 19. Plan de livraison (ordre impératif)
 
 ### Étape 0 — Spikes de dé-risquage (AVANT le core définitif)
+
 Ils informent la forme finale des ports (streaming vs batch, faisabilité local).
+
 1. **Spike WebGPU/WASM** : Whisper + Kokoro + LLM 1-3B dans le navigateur sur machine réaliste. Mesurer latence, RAM, cold start, taille download. → confirme la viabilité du "web local" ou le cantonne à l'Option B cloud. — ✅ **Fait (2026-07-03) : GO partiel** (STT/TTS OK à 0,13-0,21× RTF, 0 % WER sur audio propre ; mais WebGPU-navigateur impraticable sous Linux/NVIDIA → web = lite, 100 % local = Tauri ; LLM navigateur non fiable → cloud-ZDR par défaut). Détail dans [`SPIKES.md`](SPIKES.md) §5.
 2. **Spike scoring GOP** : wav2vec2 + alignement + score phonème sur échantillons. → confirme si le GOP local est atteignable. — ✅ **Fait (2026-07-03) : NO-GO** pour le scoring chiffré non-supervisé (PCC mot 0,25, F1 détection 0,29 sur SpeechOcean762 ; les deux formulations GOP donnent le même plafond → confirme `ear-compare` en V1, le scoring chiffré reste une piste R&D supervisée hors MVP). Détail dans [`SPIKES.md`](SPIKES.md) §7.
 3. **Spike Tauri + sidecar** : `whisper.cpp` piloté depuis le frontend web via IPC. → valide le pattern "même UI, adapters substitués". — ✅ **Fait (2026-07-03) : GO** (whisper.cpp natif CPU à RTF 0,151×, transcript exact, `core` agnostique de Tauri, audio par chemin de fichier — sans aucun flag/sandbox, contrairement au web). Détail dans [`SPIKES.md`](SPIKES.md) §6.
 
 ### Étape 1 — Fondations
+
 - Monorepo (pnpm/Turborepo), lint de dépendances, TS strict.
 - `core` : ports (§9), value objects, event bus, `ClockPort`.
 - `StoragePort` + adapter SQLite-WASM/OPFS (web).
 - `/tooling/eval` amorcé.
 
 ### Étape 2 — MVP boucle de correction
+
 - Machine à états du pipeline (jusqu'à `READY`).
 - `TranscriptionPort` (adapter web) + `CorrectionPort` (adapter cloud-ZDR opt-in via `/services/api`, + `egressGuard`).
 - UI : enregistrement → diff cliquable (Next.js + FSD).
 - Eval harness sur la correction opérationnel.
 
 ### Étape 3 — Le fossé (SRS + rétention)
+
 - Contexte SRS (SM-2/FSRS, 100 % testé), events `ErrorDetected`→`Card`.
 - Gamification : streak + XP (tests comportementaux Vitest sur le streak, un cas par règle).
 
 ### Étape 4 — Desktop 100 % local
+
 - `/apps/desktop` (Tauri) réutilisant le frontend web.
 - `/adapters-tauri` : whisper.cpp, llama.cpp (LLM **local**), Kokoro. → l'Option A (100 % local) devient réelle sur desktop.
 
 ### Étape 5 — Prononciation
+
 - TTS local + tap-sur-mot + boucle/vitesse + `ear-compare` (le socle qu'on livre).
 - Scoring chiffré : **non prévu ici** — le GOP non-supervisé est écarté (Spike #2 NO-GO). N'ouvrir la piste supervisée (GOPT, §12) que si un spike dédié la valide.
 

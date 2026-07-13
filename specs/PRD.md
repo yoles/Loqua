@@ -1,15 +1,15 @@
 # PRD — App d'entraînement à l'anglais parlé pour développeurs
 
-> **Nom de travail :** *Loqua*
+> **Nom de travail :** _Loqua_
 > **En une phrase :** L'utilisateur parle anglais, l'app lui renvoie une version native corrigée + expliquée, le fait travailler sa prononciation mot par mot, et transforme ses erreurs en un entraînement personnalisé qui le suit dans le temps.
 >
-> **Portée de ce document :** le *quoi* et le *pourquoi* (produit). Le *comment* (stack, ports, données, coûts, plan de validation) vit dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et [`../SPIKES.md`](SPIKES.md), seule source de vérité technique.
+> **Portée de ce document :** le _quoi_ et le _pourquoi_ (produit). Le _comment_ (stack, ports, données, coûts, plan de validation) vit dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et [`../SPIKES.md`](SPIKES.md), seule source de vérité technique.
 
 ---
 
 ## 1. Le problème
 
-Les devs non-anglophones comprennent souvent bien l'anglais écrit, mais **bloquent à l'oral** : vocabulaire technique approximatif, tournures « traduites du français », prononciation incertaine sur des mots pourtant courants. Les apps généralistes (Duolingo & co) ne collent ni au contexte pro (standup, code review, incident) ni au besoin de *production libre* corrigée.
+Les devs non-anglophones comprennent souvent bien l'anglais écrit, mais **bloquent à l'oral** : vocabulaire technique approximatif, tournures « traduites du français », prononciation incertaine sur des mots pourtant courants. Les apps généralistes (Duolingo & co) ne collent ni au contexte pro (standup, code review, incident) ni au besoin de _production libre_ corrigée.
 
 **Cible :** développeur intermédiaire→avancé qui veut parler un anglais pro naturel, en 10 min/jour.
 
@@ -20,9 +20,9 @@ Les devs non-anglophones comprennent souvent bien l'anglais écrit, mais **bloqu
 Ces principes viennent directement du fait que « écouter une version parfaite » ne suffit pas à progresser :
 
 1. **Production active > écoute passive.** L'utilisateur produit d'abord, l'IA corrige ensuite.
-2. **Feedback sur SA voix.** Pas seulement « voici la bonne version », mais « voici où *sa* prononciation décroche ». *(Objectif : scoring phonème ; démarrage par une comparaison à l'oreille — cf. §5 et §8.)*
+2. **Feedback sur SA voix.** Pas seulement « voici la bonne version », mais « voici où _sa_ prononciation décroche ». _(Objectif : scoring phonème ; démarrage par une comparaison à l'oreille — cf. §5 et §8.)_
 3. **Comprendre le pourquoi.** Chaque correction est catégorisée et expliquée en une phrase.
-4. **Correction graduée.** *Vision :* 3 niveaux (*minimal* / *naturel* / *natif + idiomatique*) au choix de l'utilisateur. *MVP :* un seul niveau (« naturel ») — les autres viendront s'ils sont réclamés (cf. §8).
+4. **Correction graduée.** _Vision :_ 3 niveaux (_minimal_ / _naturel_ / _natif + idiomatique_) au choix de l'utilisateur. _MVP :_ un seul niveau (« naturel ») — les autres viendront s'ils sont réclamés (cf. §8).
 5. **Ses erreurs deviennent son programme.** Répétition espacée (SRS) sur ses fautes récurrentes et ses mots difficiles. **C'est le vrai levier de progression et le différenciateur le plus défendable.**
 6. **Habitude > intensité.** Sessions courtes, streak quotidien, friction minimale.
 
@@ -34,13 +34,13 @@ Le créneau de l'entraînement oral à l'anglais assisté par IA est déjà occu
 
 ### Panorama
 
-| Outil | Ce qu'il fait | Lien |
-|---|---|---|
-| **ELSA Speak** | Spécialiste de la prononciation : feedback **phonème par phonème**, identifie les sons précis mal prononcés. Approche généraliste (pas de contexte métier). | [elsaspeak.com](https://www.elsaspeak.com) |
-| **ChatGPT (mode vocal avancé)** | Conversation orale temps réel, correction de grammaire et d'intonation, jeux de rôle, aide à la prononciation (texte + audio). | [openai.com/chatgpt](https://openai.com/chatgpt) |
-| **Speak** | Leçons structurées, expérience mobile soignée, pratique orale guidée. | [speak.com](https://www.speak.com) |
-| **Talkio AI** | Large couverture de langues et de dialectes, tuteurs IA, feedback de prononciation en temps réel. | [talkio.ai](https://www.talkio.ai) |
-| **Langua** | Conversation avec des voix clonées de locuteurs natifs, pour un rendu plus naturel. | [languatalk.com](https://languatalk.com/langua) |
+| Outil                           | Ce qu'il fait                                                                                                                                               | Lien                                             |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **ELSA Speak**                  | Spécialiste de la prononciation : feedback **phonème par phonème**, identifie les sons précis mal prononcés. Approche généraliste (pas de contexte métier). | [elsaspeak.com](https://www.elsaspeak.com)       |
+| **ChatGPT (mode vocal avancé)** | Conversation orale temps réel, correction de grammaire et d'intonation, jeux de rôle, aide à la prononciation (texte + audio).                              | [openai.com/chatgpt](https://openai.com/chatgpt) |
+| **Speak**                       | Leçons structurées, expérience mobile soignée, pratique orale guidée.                                                                                       | [speak.com](https://www.speak.com)               |
+| **Talkio AI**                   | Large couverture de langues et de dialectes, tuteurs IA, feedback de prononciation en temps réel.                                                           | [talkio.ai](https://www.talkio.ai)               |
+| **Langua**                      | Conversation avec des voix clonées de locuteurs natifs, pour un rendu plus naturel.                                                                         | [languatalk.com](https://languatalk.com/langua)  |
 
 ### Ce qui distingue Loqua
 
@@ -50,7 +50,7 @@ Trois différences factuelles se dégagent de ce panorama :
 
 2. **Un contexte pensé pour les développeurs.** Les apps existantes sont généralistes. Loqua travaille sur des situations concrètes du métier : standup, code review orale, post-mortem d'incident, explication d'une décision d'archi, interview technique.
 
-3. **Une correction explicite, pas seulement de la compréhension.** Un assistant conversationnel généraliste *comprend* l'utilisateur même quand la prononciation est approximative — et ne le reprend donc pas toujours. Loqua produit une correction **explicite et catégorisée** de chaque écart (cf. §2) et fait retravailler les points faibles dans le temps (SRS).
+3. **Une correction explicite, pas seulement de la compréhension.** Un assistant conversationnel généraliste _comprend_ l'utilisateur même quand la prononciation est approximative — et ne le reprend donc pas toujours. Loqua produit une correction **explicite et catégorisée** de chaque écart (cf. §2) et fait retravailler les points faibles dans le temps (SRS).
 
 > Sur la finesse du scoring phonème, ELSA est aujourd'hui la référence établie. C'est pour Loqua un **objectif progressif** (cf. §5 et §8), pas un acquis.
 
@@ -88,24 +88,24 @@ flowchart LR
 
 **Exemple de correction** (le format exact est défini dans [`ARCHITECTURE.md`](ARCHITECTURE.md) §9) :
 
-> *« I have make a deploy »* → *« I deployed »* — type : **grammar** — « En anglais on emploie le verbe *deploy* directement, pas la construction *make a deploy*. »
+> _« I have make a deploy »_ → _« I deployed »_ — type : **grammar** — « En anglais on emploie le verbe _deploy_ directement, pas la construction _make a deploy_. »
 
 ---
 
 ## 5. Feature : entraînement à la prononciation d'un mot
 
-C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
+C'est la feature « boucle sur le mot _interesting_ », formalisée et musclée.
 
 **Depuis le transcript, l'utilisateur tape sur n'importe quel mot** → un panneau s'ouvre :
 
 - ▶️ **Bouton lecture** : joue le mot isolé (voix locale).
-- 🔁 **Mode boucle** : répète le mot automatiquement toutes les *N* secondes (défaut 1,5 s, réglable), pour répéter en même temps derrière.
+- 🔁 **Mode boucle** : répète le mot automatiquement toutes les _N_ secondes (défaut 1,5 s, réglable), pour répéter en même temps derrière.
 - 🐢 **Vitesse réglable** : 0.5× / 0.75× / 1× (pour décomposer les mots durs).
 - 🔤 **Transcription phonétique (IPA)** + découpage syllabique : `interesting → /ˈɪn.trəs.tɪŋ/`.
 - 🎙️ **S'enregistrer & comparer** : l'utilisateur répète et confronte sa prononciation à la référence.
   - **V1 — comparaison à l'oreille** (aucun modèle de scoring) : l'utilisateur écoute, compare. **C'est la promesse tenue, le socle durable.**
-  - **Objectif lointain — scoring phonème chiffré** : l'app scorerait le mot son par son et surlignerait la syllabe ratée. Le spike de faisabilité a **tranché : le scoring local *non-supervisé* n'est pas fiable** (cf. [`../SPIKES.md`](SPIKES.md) §7) → **non livré**. Un score chiffré n'est envisageable que via un modèle **entraîné (supervisé)** : objectif R&D **non garanti**, à ne pas considérer comme acquis.
-- 👯 **Paires minimales** (ultérieur) : si l'utilisateur rate un son récurrent (ex. `/ɪ/` vs `/iː/`), l'app lui propose *ship / sheep*, *bit / beat*…
+  - **Objectif lointain — scoring phonème chiffré** : l'app scorerait le mot son par son et surlignerait la syllabe ratée. Le spike de faisabilité a **tranché : le scoring local _non-supervisé_ n'est pas fiable** (cf. [`../SPIKES.md`](SPIKES.md) §7) → **non livré**. Un score chiffré n'est envisageable que via un modèle **entraîné (supervisé)** : objectif R&D **non garanti**, à ne pas considérer comme acquis.
+- 👯 **Paires minimales** (ultérieur) : si l'utilisateur rate un son récurrent (ex. `/ɪ/` vs `/iː/`), l'app lui propose _ship / sheep_, _bit / beat_…
 
 > La comparaison rend la répétition consciente ; un scoring chiffré la rendrait mesurable — mais seulement s'il devient fiable en local (non acquis, cf. [`../SPIKES.md`](SPIKES.md) §7).
 
@@ -113,16 +113,16 @@ C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
 
 ## 6. Gamification & progression (pour la rétention)
 
-| Mécanique | Détail |
-|---|---|
-| **XP** | Gagnés par session, par mot maîtrisé, par prononciation validée. |
-| **Streak** | Jours consécutifs à avoir parlé ≥1 min. C'est le moteur d'habitude n°1. *(Règle précise — fuseau, bascule de jour, parole détectée — spécifiée dans [`ARCHITECTURE.md`](ARCHITECTURE.md) §6.)* |
-| **Niveaux / rangs** | Progression visible (ex. *Junior → Confirmé → Senior speaker*). |
-| **Badges** | « Premier standup décrit », « 100 mots maîtrisés », « 7 jours d'affilée », « Son /θ/ dompté ». |
-| **Tableau de progrès** | Courbe du taux d'erreur, minutes parlées, vocabulaire unique utilisé, scores de prononciation dans le temps. |
-| **Deck SRS personnel** | Les fautes récurrentes de l'utilisateur + ses mots difficiles reviennent au bon moment (répétition espacée). **La feature la plus forte pour progresser.** |
-| **Défis « scénario »** | Prompts contextualisés dev : *décris un bug*, *fais une code review orale*, *explique une décision d'archi*, *raconte un post-mortem d'incident*, *réponds en interview technique*. |
-| **Mode Shadowing** (ultérieur) | Parler *en même temps* que l'audio de référence pour caler rythme et intonation. |
+| Mécanique                      | Détail                                                                                                                                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **XP**                         | Gagnés par session, par mot maîtrisé, par prononciation validée.                                                                                                                               |
+| **Streak**                     | Jours consécutifs à avoir parlé ≥1 min. C'est le moteur d'habitude n°1. _(Règle précise — fuseau, bascule de jour, parole détectée — spécifiée dans [`ARCHITECTURE.md`](ARCHITECTURE.md) §6.)_ |
+| **Niveaux / rangs**            | Progression visible (ex. _Junior → Confirmé → Senior speaker_).                                                                                                                                |
+| **Badges**                     | « Premier standup décrit », « 100 mots maîtrisés », « 7 jours d'affilée », « Son /θ/ dompté ».                                                                                                 |
+| **Tableau de progrès**         | Courbe du taux d'erreur, minutes parlées, vocabulaire unique utilisé, scores de prononciation dans le temps.                                                                                   |
+| **Deck SRS personnel**         | Les fautes récurrentes de l'utilisateur + ses mots difficiles reviennent au bon moment (répétition espacée). **La feature la plus forte pour progresser.**                                     |
+| **Défis « scénario »**         | Prompts contextualisés dev : _décris un bug_, _fais une code review orale_, _explique une décision d'archi_, _raconte un post-mortem d'incident_, _réponds en interview technique_.            |
+| **Mode Shadowing** (ultérieur) | Parler _en même temps_ que l'audio de référence pour caler rythme et intonation.                                                                                                               |
 
 ---
 
@@ -132,12 +132,12 @@ C'est la feature « boucle sur le mot *interesting* », formalisée et musclée.
 
 ### Ce que ça implique, brique par brique
 
-| Brique | Où elle tourne | Statut |
-|---|---|---|
-| **Transcription (STT)** | Local (l'audio, donnée biométrique, ne sort pas) | Mature |
-| **Voix corrigée (TTS)** | Local | Mature |
-| **Correction (LLM)** | Ne traite que du **texte** (jamais l'audio). Défaut **par plateforme** : sur web = cloud **Zero-Data-Retention en opt-in** (le LLM navigateur n'est pas fiable, cf. Spike #1) ; sur desktop = **local** (llama.cpp) | Compromis maîtrisé |
-| **Scoring prononciation** | Local obligatoire (a besoin de l'audio) → pas de solution cloud clé en main. **Scoring chiffré non-supervisé : NO-GO** (Spike #2) → `ear-compare` | Point dur / R&D non garantie |
+| Brique                    | Où elle tourne                                                                                                                                                                                                      | Statut                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Transcription (STT)**   | Local (l'audio, donnée biométrique, ne sort pas)                                                                                                                                                                    | Mature                       |
+| **Voix corrigée (TTS)**   | Local                                                                                                                                                                                                               | Mature                       |
+| **Correction (LLM)**      | Ne traite que du **texte** (jamais l'audio). Défaut **par plateforme** : sur web = cloud **Zero-Data-Retention en opt-in** (le LLM navigateur n'est pas fiable, cf. Spike #1) ; sur desktop = **local** (llama.cpp) | Compromis maîtrisé           |
+| **Scoring prononciation** | Local obligatoire (a besoin de l'audio) → pas de solution cloud clé en main. **Scoring chiffré non-supervisé : NO-GO** (Spike #2) → `ear-compare`                                                                   | Point dur / R&D non garantie |
 
 ### Orientation retenue
 
@@ -159,7 +159,7 @@ Bénéfice induit : le traitement local a un **coût récurrent quasi nul**, là
 > Périmètre volontairement resserré : on prouve la valeur avant d'empiler les features. Détail d'exécution et découpage en lots dans [`ARCHITECTURE.md`](ARCHITECTURE.md) §18-19.
 
 **MVP — prouver la boucle de correction**
-`Enregistrer → STT local → correction 1 niveau (« naturel », en-US) → vue diff cliquable`, persistance locale. *But : la correction async apporte-t-elle une valeur que ChatGPT ne donne pas ?* Rien d'autre.
+`Enregistrer → STT local → correction 1 niveau (« naturel », en-US) → vue diff cliquable`, persistance locale. _But : la correction async apporte-t-elle une valeur que ChatGPT ne donne pas ?_ Rien d'autre.
 
 **Itération 2 — le fossé : faire progresser**
 Deck **SRS** des fautes de l'utilisateur (local, déterministe, gratuit — absent des concurrents conversationnels) · streak + XP.

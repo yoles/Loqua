@@ -2,11 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { z } from 'zod';
 
-import {
-  DEFAULT_CORRECTION_MODEL,
-  buildAnthropicRequest,
-  extractToolInput,
-} from './anthropic.ts';
+import { DEFAULT_CORRECTION_MODEL, buildAnthropicRequest, extractToolInput } from './anthropic.ts';
 
 // Backend FIN (invariant #3) : le serveur relaie du TEXTE, garde la clé,
 // ne lit ni ne journalise jamais le contenu. Aucune logique métier ici.

@@ -7,8 +7,7 @@ import type { RuntimeCapability } from '../ports/runtime-capability.ts';
 // Tout nouveau flux réseau de contenu = extension d'egressGuard, jamais un contournement.
 
 export type EgressPayload =
-  | { readonly kind: 'text'; readonly purpose: 'correction' }
-  | { readonly kind: 'audio' };
+  { readonly kind: 'text'; readonly purpose: 'correction' } | { readonly kind: 'audio' };
 
 export interface EgressRequest {
   readonly payload: EgressPayload;
@@ -24,8 +23,7 @@ export type EgressRefusalReason =
   | 'not-an-egress-adapter';
 
 export type EgressDecision =
-  | { readonly allowed: true }
-  | { readonly allowed: false; readonly reason: EgressRefusalReason };
+  { readonly allowed: true } | { readonly allowed: false; readonly reason: EgressRefusalReason };
 
 export interface EgressGuard {
   decide(request: EgressRequest): EgressDecision;

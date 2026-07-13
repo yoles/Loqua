@@ -19,8 +19,7 @@ export function StorageControls({ persistent, onEraseAll }: StorageControlsProps
         <p className="status-line">Historique conservé sur cette machine (SQLite/OPFS).</p>
       ) : (
         <p className="status-line" role="alert">
-          Persistance OPFS indisponible — historique gardé en mémoire, perdu au
-          rechargement.
+          Persistance OPFS indisponible — historique gardé en mémoire, perdu au rechargement.
         </p>
       )}
       <button type="button" onClick={onEraseAll} disabled={persistent === null}>

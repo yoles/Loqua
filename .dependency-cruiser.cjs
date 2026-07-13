@@ -35,7 +35,7 @@ module.exports = {
     {
       name: 'packages-sans-app',
       severity: 'error',
-      comment: 'Un package ne dépend jamais d\'une app ou d\'un service (inversion interdite)',
+      comment: "Un package ne dépend jamais d'une app ou d'un service (inversion interdite)",
       from: { path: '^packages/' },
       to: { path: '^(apps|services)/' },
     },

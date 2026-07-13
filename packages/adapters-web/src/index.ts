@@ -1,17 +1,9 @@
 export { createCloudCorrectionPort } from './correction/cloud-correction-port.ts';
-export {
-  correctionPayloadSchema,
-  type CorrectionPayload,
-} from './correction/correction-schema.ts';
+export { correctionPayloadSchema, type CorrectionPayload } from './correction/correction-schema.ts';
 export { WEB_MODEL_REGISTRY, findModel, type WebModelEntry } from './models/registry.ts';
 export { createEarCompareScoringPort } from './pronunciation/ear-compare-scoring-port.ts';
 export { createWebModelRuntime, type ModelLoader } from './models/web-model-runtime.ts';
-export type {
-  AsrDevice,
-  AsrEngine,
-  AsrEngineFactory,
-  AsrOutput,
-} from './stt/asr-engine.ts';
+export type { AsrDevice, AsrEngine, AsrEngineFactory, AsrOutput } from './stt/asr-engine.ts';
 export { decodeToPcm16k, resampleLinear } from './stt/audio-decode.ts';
 export { createTransformersAsrEngineFactory } from './stt/transformers-asr-engine.ts';
 export { createWhisperTranscriptionPort } from './stt/whisper-transcription-port.ts';
