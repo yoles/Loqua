@@ -38,6 +38,9 @@ export function CorrectionSession() {
 
   const egressRefused = view.failure?.cause === 'egress-refused';
   const undecodableAudio = view.failure?.cause === 'undecodable-audio';
+  // Décidée par la failure-policy du core (retry → dégrade local → opt-in cloud) ;
+  // l'UI l'affiche, elle ne la décide pas (invariant #5).
+  const failureAction = view.failure !== null ? appCtx.runner.failureAction() : null;
   const readyCorrections =
     appCtx.state.phase === 'READY' ? appCtx.state.correction.corrections : [];
   const correctionTier =
@@ -109,7 +112,7 @@ export function CorrectionSession() {
             {view.failure.kind === 'stt' ? 'Transcription impossible' : 'Correction impossible'}
           </h2>
           <p className="status-line">{view.failure.reason}</p>
-          {egressRefused && !appCtx.isDesktop ? (
+          {(egressRefused || failureAction === 'offer-cloud-optin') && !appCtx.isDesktop ? (
             <p>
               La correction avancée est désactivée : active « Correction avancée » ci-dessus (seul
               le <strong>texte</strong> transcrit est envoyé, jamais ta voix), puis réessaie.

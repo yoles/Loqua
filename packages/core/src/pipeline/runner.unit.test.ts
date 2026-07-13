@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createEventBus, makeCorrection } from '../index.ts';
+import { FAILURE_POLICY } from './failure-policy.ts';
 import { createPipelineRunner } from './runner.ts';
 import type {
   AudioClip,
@@ -140,7 +141,7 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     }
   });
 
-  it('retries transcription on demand and can reach READY', async () => {
+  it('retries transcription automatically after a transient failure and reaches READY', async () => {
     const transcribe = vi
       .fn()
       .mockRejectedValueOnce(new Error('transient'))
@@ -154,12 +155,43 @@ describe('pipeline runner (effects around the pure reducer)', () => {
 
     runner.startRecording();
     await runner.finishRecording(clip);
-    expect(runner.state().phase).toBe('FAILED_STT');
-
-    await runner.retry();
 
     expect(runner.state().phase).toBe('READY');
     expect(transcribe).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops the automatic STT retries at the attempt limit and surfaces the failure', async () => {
+    const transcribe = vi.fn().mockRejectedValue(new Error('model crashed'));
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription({ transcribe }),
+      correction: fakeCorrection(),
+      variant: 'en-US',
+      onState: () => {},
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(runner.state().phase).toBe('FAILED_STT');
+    expect(transcribe).toHaveBeenCalledTimes(FAILURE_POLICY.maxAttempts);
+  });
+
+  it('still honors a user-driven retry after the automatic retries are exhausted', async () => {
+    const transcribe = vi.fn().mockRejectedValue(new Error('model crashed'));
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription({ transcribe }),
+      correction: fakeCorrection(),
+      variant: 'en-US',
+      onState: () => {},
+    });
+    runner.startRecording();
+    await runner.finishRecording(clip);
+    expect(runner.state().phase).toBe('FAILED_STT');
+
+    transcribe.mockResolvedValue(transcription);
+    await runner.retry();
+
+    expect(runner.state().phase).toBe('READY');
   });
 
   it('surfaces a correction failure as FAILED_LLM keeping the transcript', async () => {
@@ -183,7 +215,7 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     }
   });
 
-  it('retries the correction only, without re-transcribing', async () => {
+  it('retries the correction automatically without re-transcribing', async () => {
     const transcribe = vi.fn().mockResolvedValue(transcription);
     const correct = vi
       .fn()
@@ -198,13 +230,70 @@ describe('pipeline runner (effects around the pure reducer)', () => {
 
     runner.startRecording();
     await runner.finishRecording(clip);
-    expect(runner.state().phase).toBe('FAILED_LLM');
-
-    await runner.retry();
 
     expect(runner.state().phase).toBe('READY');
     expect(transcribe).toHaveBeenCalledTimes(1);
     expect(correct).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports no failure action outside the failure phases', () => {
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection(),
+      variant: 'en-US',
+      onState: () => {},
+    });
+
+    expect(runner.failureAction()).toBeNull();
+  });
+
+  it('offers the cloud opt-in after exhausted LLM retries when no local adapter can take over', async () => {
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct: vi.fn().mockRejectedValue(new Error('down')) }),
+      variant: 'en-US',
+      onState: () => {},
+      recovery: { canDegradeToLocal: () => false, canOfferCloudOptIn: () => true },
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(runner.state().phase).toBe('FAILED_LLM');
+    expect(runner.failureAction()).toBe('offer-cloud-optin');
+  });
+
+  it('proposes degrading to the local adapter after exhausted LLM retries when one exists', async () => {
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct: vi.fn().mockRejectedValue(new Error('down')) }),
+      variant: 'en-US',
+      onState: () => {},
+      recovery: { canDegradeToLocal: () => true, canOfferCloudOptIn: () => true },
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(runner.failureAction()).toBe('degrade-local');
+  });
+
+  it('only asks the user after exhausted STT retries — audio never falls back to the cloud', async () => {
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription({
+        transcribe: vi.fn().mockRejectedValue(new Error('model crashed')),
+      }),
+      correction: fakeCorrection(),
+      variant: 'en-US',
+      onState: () => {},
+      recovery: { canDegradeToLocal: () => true, canOfferCloudOptIn: () => true },
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(runner.state().phase).toBe('FAILED_STT');
+    expect(runner.failureAction()).toBe('ask-user');
   });
 
   it('aborts back to IDLE from a failure', async () => {

@@ -41,7 +41,13 @@ export {
 } from './contexts/srs/pronunciation-card-policy.ts';
 
 // srs
-export { makeCard, reviewCard, type Card, type ReviewItem } from './contexts/srs/card.ts';
+export {
+  makeCard,
+  reviewCard,
+  type Card,
+  type ReviewErrorType,
+  type ReviewItem,
+} from './contexts/srs/card.ts';
 export { SrsError } from './contexts/srs/errors.ts';
 export { REVIEW_GRADES, type ReviewGrade } from './contexts/srs/review-grade.ts';
 export {
@@ -113,6 +119,13 @@ export {
 // pipeline
 export { PipelineError } from './pipeline/errors.ts';
 export {
+  FAILURE_POLICY,
+  nextFailureAction,
+  type FailedPipelineState,
+  type FailureAction,
+  type FailureRecoveryOptions,
+} from './pipeline/failure-policy.ts';
+export {
   INITIAL_PIPELINE_STATE,
   transition,
   type PipelineEvent,
@@ -120,6 +133,7 @@ export {
 } from './pipeline/pipeline.ts';
 export {
   createPipelineRunner,
+  type FailureRecoveryProbe,
   type PipelineRunner,
   type PipelineRunnerDeps,
   type ReadySession,
