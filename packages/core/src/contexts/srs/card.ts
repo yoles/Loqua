@@ -1,10 +1,14 @@
 import { SrsError } from './errors.ts';
 import { applyReview, initialScheduling, makeScheduling } from './scheduling.ts';
 import { deepFreeze } from '../../shared/freeze.ts';
+import type { EventOfKind } from '../../events/domain-events.ts';
 import type { CardId } from '../../shared/ids.ts';
-import type { ErrorType } from '../correction/error-type.ts';
 import type { ReviewGrade } from './review-grade.ts';
 import type { Scheduling } from './scheduling.ts';
+
+// Vocabulaire alimenté par l'événement ErrorDetected consommé par la policy —
+// jamais d'import direct du context correction (comm inter-contexte = événements).
+export type ReviewErrorType = EventOfKind<'ErrorDetected'>['type'];
 
 // Invariant #6 : la Card stocke une COPIE DE VALEUR de l'item —
 // jamais une référence vers la Session (droit à l'effacement by design).
@@ -12,7 +16,7 @@ export type ReviewItem =
   | { readonly kind: 'word'; readonly word: string }
   | {
       readonly kind: 'error';
-      readonly type: ErrorType;
+      readonly type: ReviewErrorType;
       readonly original: string;
       readonly fixed: string;
     };
