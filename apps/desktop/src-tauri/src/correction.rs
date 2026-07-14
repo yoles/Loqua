@@ -21,6 +21,11 @@ const SYSTEM_PROMPT: &str = r#"You are an English coach for professional softwar
 The user speaks English aloud; you receive the raw transcript of what they said.
 Correct it to natural, professional spoken English (the "natural" level: fix real errors,
 keep the speaker's voice — do not rewrite into formal prose, do not add content).
+The transcript is machine-generated and may contain mishearings: wrong but similar-sounding
+words, homophones, or a garbled name. Only fix genuine spoken-English learner errors. If a
+fragment is already valid, natural English, leave it unchanged even when it reads oddly — a
+plausible but unexpected word is more likely a transcription artifact than a learner mistake,
+and you cannot hear the original speech. Never invent words to complete such a fragment.
 Focus on: grammar, tense, articles, word order, unnatural calques, vocabulary and idioms
 as used in a software-engineering workplace (standups, code reviews, incidents).
 If the transcript is already natural, return it unchanged with an empty corrections list.
@@ -120,7 +125,9 @@ fn resolve_sidecar() -> Result<PathBuf, LlmError> {
         if path.is_file() {
             return Ok(path);
         }
-        return Err(LlmError::SidecarUnavailable("LOQUA_LLM_SIDECAR is not a file".into()));
+        return Err(LlmError::SidecarUnavailable(
+            "LOQUA_LLM_SIDECAR is not a file".into(),
+        ));
     }
     let exe = std::env::current_exe().map_err(|e| LlmError::SidecarUnavailable(e.to_string()))?;
     let dir = exe
@@ -135,7 +142,9 @@ fn resolve_sidecar() -> Result<PathBuf, LlmError> {
     if candidate.is_file() {
         Ok(candidate)
     } else {
-        Err(LlmError::SidecarUnavailable("sidecar binary not found next to app".into()))
+        Err(LlmError::SidecarUnavailable(
+            "sidecar binary not found next to app".into(),
+        ))
     }
 }
 
@@ -154,7 +163,9 @@ fn run_sidecar(sidecar: &Path, request: &SidecarRequest) -> Result<String, LlmEr
         .ok_or_else(|| LlmError::Inference("sidecar stdin unavailable".into()))?
         .write_all(&payload)
         .map_err(|e| LlmError::Inference(e.to_string()))?;
-    let output = child.wait_with_output().map_err(|e| LlmError::Inference(e.to_string()))?;
+    let output = child
+        .wait_with_output()
+        .map_err(|e| LlmError::Inference(e.to_string()))?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let parsed: serde_json::Value = serde_json::from_str(stdout.trim())
         .map_err(|_| LlmError::Inference("malformed sidecar response".into()))?;
@@ -197,7 +208,10 @@ pub fn correct(
 
     let started = Instant::now();
     let output = run_sidecar(&sidecar, &request)?;
-    eprintln!("llm done: model={model_id} elapsed_s={:.1}", started.elapsed().as_secs_f64());
+    eprintln!(
+        "llm done: model={model_id} elapsed_s={:.1}",
+        started.elapsed().as_secs_f64()
+    );
 
     extract_json_object(&output)
         .map(str::to_owned)
@@ -210,11 +224,23 @@ mod tests {
 
     #[test]
     fn rejects_empty_and_oversized_transcripts_and_unknown_variants() {
-        assert!(matches!(validate_input("", "en-US"), Err(LlmError::InvalidInput(_))));
-        assert!(matches!(validate_input("   ", "en-US"), Err(LlmError::InvalidInput(_))));
+        assert!(matches!(
+            validate_input("", "en-US"),
+            Err(LlmError::InvalidInput(_))
+        ));
+        assert!(matches!(
+            validate_input("   ", "en-US"),
+            Err(LlmError::InvalidInput(_))
+        ));
         let oversized = "x".repeat(MAX_TRANSCRIPT_CHARS + 1);
-        assert!(matches!(validate_input(&oversized, "en-US"), Err(LlmError::InvalidInput(_))));
-        assert!(matches!(validate_input("hello", "fr-FR"), Err(LlmError::InvalidInput(_))));
+        assert!(matches!(
+            validate_input(&oversized, "en-US"),
+            Err(LlmError::InvalidInput(_))
+        ));
+        assert!(matches!(
+            validate_input("hello", "fr-FR"),
+            Err(LlmError::InvalidInput(_))
+        ));
         assert!(validate_input("I have deploy the service", "en-GB").is_ok());
     }
 
@@ -267,7 +293,10 @@ mod tests {
     fn corrects_a_faulty_dev_utterance_natively() {
         let model_source = std::env::var("LOQUA_TEST_MODEL")
             .expect("set LOQUA_TEST_MODEL to a downloaded qwen3 gguf");
-        assert!(std::env::var(SIDECAR_ENV).is_ok(), "set LOQUA_LLM_SIDECAR to the built binary");
+        assert!(
+            std::env::var(SIDECAR_ENV).is_ok(),
+            "set LOQUA_LLM_SIDECAR to the built binary"
+        );
 
         let app_data = std::env::temp_dir().join("loqua-test-llm-e2e");
         let _ = std::fs::remove_dir_all(&app_data);
