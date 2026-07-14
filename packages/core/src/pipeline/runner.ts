@@ -35,6 +35,10 @@ export interface PipelineRunnerDeps {
   readonly onReady?: (session: ReadySession) => void;
   readonly events?: EventBus;
   readonly recovery?: FailureRecoveryProbe;
+  // Relecture du transcript avant correction (toggle UI). Lue à chaque
+  // transcription : quand elle renvoie `true`, le runner s'arrête à TRANSCRIBED
+  // et attend `confirmTranscript` ; sinon il enchaîne la correction (défaut MVP).
+  readonly shouldReviewTranscript?: () => boolean;
 }
 
 export interface PipelineRunner {
@@ -42,6 +46,7 @@ export interface PipelineRunner {
   failureAction(): FailureAction | null;
   startRecording(): void;
   finishRecording(clip: AudioClip): Promise<void>;
+  confirmTranscript(editedText?: string): Promise<void>;
   retry(): Promise<void>;
   abort(): void;
 }
@@ -94,6 +99,9 @@ export function createPipelineRunner(deps: PipelineRunnerDeps): PipelineRunner {
         await transcribe(clip);
       }
       return;
+    }
+    if (deps.shouldReviewTranscript?.() ?? false) {
+      return; // pause à TRANSCRIBED : l'UI attend confirmTranscript (relecture opt-in)
     }
     await correct();
   }
@@ -157,6 +165,17 @@ export function createPipelineRunner(deps: PipelineRunnerDeps): PipelineRunner {
       lastClip = clip;
       dispatch({ type: 'RecordStopped', clipId: clip.id });
       await transcribe(clip);
+    },
+
+    async confirmTranscript(editedText?: string): Promise<void> {
+      if (state.phase !== 'TRANSCRIBED') {
+        return;
+      }
+      const edited = editedText?.trim();
+      if (edited !== undefined && edited.length > 0 && edited !== state.transcription.text) {
+        dispatch({ type: 'TranscriptEdited', text: edited });
+      }
+      await correct();
     },
 
     async retry(): Promise<void> {

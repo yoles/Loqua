@@ -59,6 +59,7 @@ function fakeRunner(overrides?: Partial<PipelineRunner>): PipelineRunner {
     failureAction: () => null,
     startRecording: vi.fn(),
     finishRecording: vi.fn().mockResolvedValue(undefined),
+    confirmTranscript: vi.fn().mockResolvedValue(undefined),
     retry: vi.fn().mockResolvedValue(undefined),
     abort: vi.fn(),
     ...overrides,
@@ -77,6 +78,7 @@ function fakeApp(overrides?: Partial<CorrectionApp>): CorrectionApp {
     isDesktop: false,
     microphoneConsent: true,
     cloudCorrection: false,
+    reviewBeforeCorrection: false,
     sessions: [],
     storagePersistent: true,
     review: null,
@@ -84,6 +86,7 @@ function fakeApp(overrides?: Partial<CorrectionApp>): CorrectionApp {
     gamification: null,
     grantMicrophone: vi.fn(),
     setCloudCorrection: vi.fn(),
+    setReviewBeforeCorrection: vi.fn(),
     practiceWord: vi.fn(),
     eraseAll: vi.fn().mockResolvedValue(undefined),
     ...overrides,
@@ -146,6 +149,32 @@ describe('CorrectionSession (smart widget reflecting the pipeline state)', () =>
     });
 
     expect(screen.getByText(/La correction avancée est désactivée/)).toBeDefined();
+  });
+
+  it('lets the user edit the transcript and confirm before correction when review is enabled', () => {
+    const transcribedState: PipelineState = {
+      phase: 'TRANSCRIBED',
+      clipId: 'clip-1',
+      transcription,
+    };
+    const app = renderSession({ state: transcribedState, reviewBeforeCorrection: true });
+
+    const textarea = screen.getByLabelText('Transcription à relire');
+    fireEvent.change(textarea, { target: { value: 'I read a lot' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Corriger' }));
+
+    expect(app.runner.confirmTranscript).toHaveBeenCalledWith('I read a lot');
+  });
+
+  it('does not show the review panel on the fast path (review disabled)', () => {
+    const transcribedState: PipelineState = {
+      phase: 'TRANSCRIBED',
+      clipId: 'clip-1',
+      transcription,
+    };
+    renderSession({ state: transcribedState, reviewBeforeCorrection: false });
+
+    expect(screen.queryByRole('heading', { name: 'Relis ta transcription' })).toBeNull();
   });
 
   it('offers only re-recording when the clip is undecodable (a retry would fail identically)', () => {

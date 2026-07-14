@@ -16,10 +16,16 @@ export interface SessionView {
   readonly isRecording: boolean;
   readonly busyLabel: string | null;
   readonly failure: SessionFailureView | null;
+  // Relecture opt-in : le transcript brut à relire/éditer avant correction.
+  readonly review: { readonly transcript: string } | null;
   readonly diff: {
     readonly originalText: string;
     readonly correctedText: string;
   } | null;
+}
+
+export interface SessionViewOptions {
+  readonly reviewMode?: boolean;
 }
 
 function failureCauseOf(reason: string): FailureCause {
@@ -38,16 +44,28 @@ function failureView(kind: 'stt' | 'llm', reason: string): SessionFailureView {
   return { kind, reason, cause, canRetry: cause !== 'undecodable-audio' };
 }
 
-export function sessionView(state: PipelineState): SessionView {
+function busyLabelOf(state: PipelineState, reviewMode: boolean): string | null {
+  if (state.phase === 'TRANSCRIBING') {
+    return `Transcription locale… (essai ${state.attempt})`;
+  }
+  if (state.phase === 'CORRECTING') {
+    return 'Correction en cours…';
+  }
+  // En relecture opt-in, TRANSCRIBED est une pause éditable, pas un moment « busy ».
+  if (state.phase === 'TRANSCRIBED' && !reviewMode) {
+    return 'Correction en cours…';
+  }
+  return null;
+}
+
+export function sessionView(state: PipelineState, options: SessionViewOptions = {}): SessionView {
+  const reviewMode = options.reviewMode ?? false;
   return {
     canStartRecording: state.phase === 'IDLE' || state.phase === 'READY',
     isRecording: state.phase === 'RECORDING',
-    busyLabel:
-      state.phase === 'TRANSCRIBING'
-        ? `Transcription locale… (essai ${state.attempt})`
-        : state.phase === 'TRANSCRIBED' || state.phase === 'CORRECTING'
-          ? 'Correction en cours…'
-          : null,
+    busyLabel: busyLabelOf(state, reviewMode),
+    review:
+      reviewMode && state.phase === 'TRANSCRIBED' ? { transcript: state.transcription.text } : null,
     failure:
       state.phase === 'FAILED_STT'
         ? failureView('stt', state.reason)

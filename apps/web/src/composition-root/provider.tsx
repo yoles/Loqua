@@ -11,6 +11,7 @@ import { CorrectionAppContext } from './correction-app-context';
 import { useConsentControls } from './use-consent-controls';
 import { useCorrectionPipeline } from './use-correction-pipeline';
 import { useLearningBootstrap } from './use-learning-bootstrap';
+import { useReviewPreference } from './use-review-preference';
 import { useSessionPersistence } from './use-session-persistence';
 import type { CorrectionApp } from './correction-app';
 import type { CorrectionPipeline } from './use-correction-pipeline';
@@ -29,9 +30,11 @@ function pipelineView(pipeline: CorrectionPipeline) {
 
 function useCorrectionAppInternal(): CorrectionApp {
   const cloudOptInRef = useRef(false);
+  const review = useReviewPreference();
   const persistence = useSessionPersistence();
   const pipeline = useCorrectionPipeline({
     cloudOptIn: () => cloudOptInRef.current,
+    shouldReviewTranscript: () => review.reviewRef.current,
     onReady: persistence.persistSession,
   });
   const consent = useConsentControls(pipeline.bus, cloudOptInRef);
@@ -49,6 +52,8 @@ function useCorrectionAppInternal(): CorrectionApp {
     ...pipelineView(pipeline),
     isDesktop: isTauriRuntime(),
     sessions: persistence.sessions,
+    reviewBeforeCorrection: review.reviewBeforeCorrection,
+    setReviewBeforeCorrection: review.setReviewBeforeCorrection,
     ...consent,
     ...learning,
     practiceWord,

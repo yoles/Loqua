@@ -53,6 +53,7 @@ export type PipelineEvent =
   | { readonly type: 'TranscribeOk'; readonly transcription: TranscriptionResult }
   | { readonly type: 'TranscribeErr'; readonly reason: string }
   | { readonly type: 'RetryTranscription' }
+  | { readonly type: 'TranscriptEdited'; readonly text: string }
   | { readonly type: 'CorrectStarted' }
   | { readonly type: 'CorrectOk'; readonly correction: CorrectionResult }
   | { readonly type: 'CorrectErr'; readonly reason: string }
@@ -106,6 +107,16 @@ function next(state: PipelineState, event: PipelineEvent): PipelineState {
       return reject(state, event);
 
     case 'TRANSCRIBED':
+      if (event.type === 'TranscriptEdited') {
+        // Relecture opt-in (ARCHITECTURE §10 `userEdit?`) : l'utilisateur rétablit
+        // ce qu'il a réellement dit avant la correction, corrigeant les mécoutes STT.
+        // Les timings par mot ne s'alignent plus sur le texte édité → vidés.
+        return {
+          phase: 'TRANSCRIBED',
+          clipId: state.clipId,
+          transcription: { text: event.text, words: [], language: state.transcription.language },
+        };
+      }
       if (event.type === 'CorrectStarted') {
         return {
           phase: 'CORRECTING',

@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { useCorrectionApp } from '@/composition-root';
 import { ConsentGate } from '@/features/consent/ConsentGate';
 import { CorrectionDiff } from '@/features/correction-diff/CorrectionDiff';
+import { TranscriptReview } from '@/features/transcript-review/TranscriptReview';
 import { ReadAloudButton } from '@/features/read-aloud/ReadAloudButton';
 import { WordPanel } from '@/features/word-practice/WordPanel';
 import { SessionHistory } from '@/features/history/SessionHistory';
@@ -17,7 +18,7 @@ import { sessionView } from '@/entities/session/view-model';
 export function CorrectionSession() {
   const appCtx = useCorrectionApp();
   const recorder = useRecorder();
-  const view = sessionView(appCtx.state);
+  const view = sessionView(appCtx.state, { reviewMode: appCtx.reviewBeforeCorrection });
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const onRecordClick = useCallback(async () => {
@@ -76,6 +77,15 @@ export function CorrectionSession() {
             l&apos;audio)
           </label>
         )}
+
+        <label style={{ display: 'block', marginBlock: '0.75rem' }}>
+          <input
+            type="checkbox"
+            checked={appCtx.reviewBeforeCorrection}
+            onChange={(event) => appCtx.setReviewBeforeCorrection(event.target.checked)}
+          />{' '}
+          Relire ma transcription avant la correction (corriger les mots mal entendus)
+        </label>
 
         <button
           type="button"
@@ -146,6 +156,14 @@ export function CorrectionSession() {
             </button>
           </p>
         </section>
+      ) : null}
+
+      {view.review !== null ? (
+        <TranscriptReview
+          transcript={view.review.transcript}
+          onConfirm={(text) => void appCtx.runner.confirmTranscript(text)}
+          onCancel={() => appCtx.runner.abort()}
+        />
       ) : null}
 
       {view.diff !== null ? (

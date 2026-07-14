@@ -120,6 +120,77 @@ describe('pipeline runner (effects around the pure reducer)', () => {
     ]);
   });
 
+  it('pauses at TRANSCRIBED for review instead of auto-correcting when review is enabled', async () => {
+    const correct = vi.fn().mockResolvedValue(correction);
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct }),
+      variant: 'en-US',
+      onState: () => {},
+      shouldReviewTranscript: () => true,
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+
+    expect(runner.state().phase).toBe('TRANSCRIBED');
+    expect(correct).not.toHaveBeenCalled();
+  });
+
+  it('confirms an unedited transcript and proceeds to READY', async () => {
+    const correct = vi.fn().mockResolvedValue(correction);
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct }),
+      variant: 'en-US',
+      onState: () => {},
+      shouldReviewTranscript: () => true,
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+    await runner.confirmTranscript();
+
+    expect(runner.state().phase).toBe('READY');
+    expect(correct).toHaveBeenCalledWith({ text: transcription.text, variant: 'en-US' });
+  });
+
+  it('corrects the edited transcript when the user fixes an STT mishearing', async () => {
+    const correct = vi.fn().mockResolvedValue(correction);
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct }),
+      variant: 'en-US',
+      onState: () => {},
+      shouldReviewTranscript: () => true,
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+    await runner.confirmTranscript('I read a lot');
+
+    expect(runner.state().phase).toBe('READY');
+    expect(correct).toHaveBeenCalledWith({ text: 'I read a lot', variant: 'en-US' });
+  });
+
+  it('ignores confirmTranscript outside the review pause', async () => {
+    const correct = vi.fn().mockResolvedValue(correction);
+    const runner = createPipelineRunner({
+      transcription: fakeTranscription(),
+      correction: fakeCorrection({ correct }),
+      variant: 'en-US',
+      onState: () => {},
+    });
+
+    runner.startRecording();
+    await runner.finishRecording(clip);
+    expect(runner.state().phase).toBe('READY');
+
+    await runner.confirmTranscript('too late');
+
+    expect(correct).toHaveBeenCalledTimes(1);
+  });
+
   it('surfaces an STT failure as FAILED_STT with the reason', async () => {
     const transcriptionPort = fakeTranscription({
       transcribe: vi.fn().mockRejectedValue(new Error('model crashed')),

@@ -20,6 +20,7 @@ export interface CorrectionApp {
   readonly isDesktop: boolean; // Tauri : 100 % local, le cloud opt-in est masqué
   readonly microphoneConsent: boolean;
   readonly cloudCorrection: boolean;
+  readonly reviewBeforeCorrection: boolean; // toggle : relire le transcript avant correction
   readonly sessions: readonly SessionRecord[];
   readonly storagePersistent: boolean | null; // null = stockage indisponible
   readonly review: ReviewDeck | null; // null tant que le stockage n'est pas prêt
@@ -27,6 +28,7 @@ export interface CorrectionApp {
   readonly gamification: GamificationState | null;
   grantMicrophone(): void;
   setCloudCorrection(enabled: boolean): void;
+  setReviewBeforeCorrection(enabled: boolean): void;
   practiceWord(word: string): void; // mot pratiqué → carte SRS (lot 5.3)
   eraseAll(): Promise<void>;
 }

@@ -51,6 +51,18 @@ describe('session view model reflects the pipeline state', () => {
     });
   });
 
+  it('exposes no review pause by default (fast path auto-corrects)', () => {
+    expect(sessionView(stateAt('TRANSCRIBED')).review).toBeNull();
+    expect(sessionView(stateAt('TRANSCRIBED')).busyLabel).toContain('Correction');
+  });
+
+  it('exposes the raw transcript for review when review mode is on', () => {
+    const view = sessionView(stateAt('TRANSCRIBED'), { reviewMode: true });
+
+    expect(view.review).toEqual({ transcript: 'I have make a deploy' });
+    expect(view.busyLabel).toBeNull();
+  });
+
   it('surfaces an STT failure with its reason (never silent)', () => {
     const failed = failedSttWith('model OOM');
 

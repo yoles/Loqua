@@ -14,6 +14,7 @@ import type { MutableRefObject } from 'react';
 
 interface CorrectionPipelineOptions {
   readonly cloudOptIn: () => boolean;
+  readonly shouldReviewTranscript: () => boolean;
   readonly onReady: (session: ReadySession) => void;
 }
 
@@ -42,6 +43,7 @@ function assemblePipeline(
     onReady: (session) => optionsRef.current.onReady(session),
     events: bus,
     recovery: buildRecoveryProbe(cloudOptIn),
+    shouldReviewTranscript: () => optionsRef.current.shouldReviewTranscript(),
   });
   return { bus, ports, runner };
 }

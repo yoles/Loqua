@@ -78,6 +78,51 @@ describe('pipeline reducer — happy path', () => {
   });
 });
 
+describe('pipeline reducer — optional transcript review', () => {
+  const toTranscribed: readonly PipelineEvent[] = [
+    { type: 'RecordStarted' },
+    { type: 'RecordStopped', clipId: 'clip-1' },
+    { type: 'TranscribeOk', transcription },
+  ];
+
+  it('replaces the transcript text while staying in TRANSCRIBED', () => {
+    const state = drive([...toTranscribed, { type: 'TranscriptEdited', text: 'I read a lot' }]);
+
+    expect(state.phase).toBe('TRANSCRIBED');
+    if (state.phase === 'TRANSCRIBED') {
+      expect(state.transcription.text).toBe('I read a lot');
+      expect(state.transcription.language).toBe('en');
+    }
+  });
+
+  it('drops stale word timings when the transcript is edited', () => {
+    const state = drive([...toTranscribed, { type: 'TranscriptEdited', text: 'I read a lot' }]);
+
+    if (state.phase === 'TRANSCRIBED') {
+      expect(state.transcription.words).toEqual([]);
+    }
+  });
+
+  it('corrects the edited transcript, not the original mishearing', () => {
+    const state = drive([
+      ...toTranscribed,
+      { type: 'TranscriptEdited', text: 'I read a lot' },
+      { type: 'CorrectStarted' },
+    ]);
+
+    expect(state.phase).toBe('CORRECTING');
+    if (state.phase === 'CORRECTING') {
+      expect(state.transcription.text).toBe('I read a lot');
+    }
+  });
+
+  it('rejects a transcript edit outside TRANSCRIBED', () => {
+    expect(() =>
+      transition({ phase: 'RECORDING' }, { type: 'TranscriptEdited', text: 'x' }),
+    ).toThrow(PipelineError);
+  });
+});
+
 describe('pipeline reducer — failures and recovery', () => {
   const toTranscribing: readonly PipelineEvent[] = [
     { type: 'RecordStarted' },
