@@ -70,23 +70,43 @@ fn transcribe_samples(
     context: &WhisperContext,
     samples: &[f32],
 ) -> Result<(String, Vec<WordTimingOut>), SttError> {
-    let mut state = context.create_state().map_err(|e| SttError::Inference(e.to_string()))?;
-    let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+    let mut state = context
+        .create_state()
+        .map_err(|e| SttError::Inference(e.to_string()))?;
+    // Beam search plutôt que greedy : levier de précision principal du décodage —
+    // réduit nettement les mécoutes sur de l'audio ambigu (ex. « read a lot » vs
+    // « really love »). beam_size 5 = défaut whisper.cpp ; patience -1 = désactivée.
+    let mut params = FullParams::new(SamplingStrategy::BeamSearch {
+        beam_size: 5,
+        patience: -1.0,
+    });
     params.set_language(Some("en"));
     params.set_print_progress(false);
     params.set_print_special(false);
     params.set_print_realtime(false);
-    state.full(params, samples).map_err(|e| SttError::Inference(e.to_string()))?;
+    // Repli en température : un segment qui décode mal (logprob bas / no-speech
+    // élevé) est réessayé à température croissante → évite les hallucinations.
+    params.set_temperature(0.0);
+    params.set_temperature_inc(0.2);
+    state
+        .full(params, samples)
+        .map_err(|e| SttError::Inference(e.to_string()))?;
 
-    let segment_count = state.full_n_segments().map_err(|e| SttError::Inference(e.to_string()))?;
+    let segment_count = state
+        .full_n_segments()
+        .map_err(|e| SttError::Inference(e.to_string()))?;
     let mut text = String::new();
     let mut words = Vec::new();
     for index in 0..segment_count {
         let segment = state
             .full_get_segment_text(index)
             .map_err(|e| SttError::Inference(e.to_string()))?;
-        let start = state.full_get_segment_t0(index).map_err(|e| SttError::Inference(e.to_string()))?;
-        let end = state.full_get_segment_t1(index).map_err(|e| SttError::Inference(e.to_string()))?;
+        let start = state
+            .full_get_segment_t0(index)
+            .map_err(|e| SttError::Inference(e.to_string()))?;
+        let end = state
+            .full_get_segment_t1(index)
+            .map_err(|e| SttError::Inference(e.to_string()))?;
         text.push_str(&segment);
         words.push(WordTimingOut {
             text: segment.trim().to_string(),
@@ -116,11 +136,14 @@ pub fn transcribe(
     if !ready {
         return Err(SttError::ModelNotReady(model_id.to_string()));
     }
-    let clip_path =
-        clips::clip_path(app_data_dir, clip_id).map_err(|_| SttError::InvalidInput("bad clip id"))?;
+    let clip_path = clips::clip_path(app_data_dir, clip_id)
+        .map_err(|_| SttError::InvalidInput("bad clip id"))?;
     let samples = read_wav_16k_mono(&clip_path)?;
 
-    let mut cache = state.0.lock().map_err(|_| SttError::Inference("stt lock poisoned".into()))?;
+    let mut cache = state
+        .0
+        .lock()
+        .map_err(|_| SttError::Inference("stt lock poisoned".into()))?;
     let needs_load = !matches!(&*cache, Some(cached) if cached.model_id == model_id);
     if needs_load {
         let model_path = models::model_path(app_data_dir, model_id)
@@ -130,7 +153,9 @@ pub fn transcribe(
             context: load_context(&model_path)?,
         });
     }
-    let cached = cache.as_ref().ok_or(SttError::Inference("model cache empty".into()))?;
+    let cached = cache
+        .as_ref()
+        .ok_or(SttError::Inference("model cache empty".into()))?;
 
     let started = Instant::now();
     let (text, words) = transcribe_samples(&cached.context, &samples)?;
@@ -159,11 +184,14 @@ mod tests {
     #[test]
     #[ignore]
     fn transcribes_the_jfk_reference_clip_natively() {
-        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../../spikes/spike-3-tauri/assets");
+        let assets =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../spikes/spike-3-tauri/assets");
         let model_source = assets.join("ggml-base.en.bin");
         let clip_source = assets.join("jfk.wav");
-        assert!(model_source.exists(), "spike model missing: {model_source:?}");
+        assert!(
+            model_source.exists(),
+            "spike model missing: {model_source:?}"
+        );
 
         let app_data = std::env::temp_dir().join("loqua-test-stt-e2e");
         let _ = fs::remove_dir_all(&app_data);
@@ -181,11 +209,15 @@ mod tests {
         let result = transcribe(&state, &app_data, "jfk", "whisper-base-en").unwrap();
 
         assert!(
-            result.text.to_lowercase().contains("ask not what your country"),
+            result
+                .text
+                .to_lowercase()
+                .contains("ask not what your country"),
             "unexpected transcript: {}",
             result.text
         );
-        assert!(result.rtf < 0.5, "rtf too slow: {}", result.rtf);
+        // Beam search est plus lent que greedy mais doit rester sous le temps réel.
+        assert!(result.rtf < 1.0, "rtf too slow: {}", result.rtf);
         let _ = fs::remove_dir_all(&app_data);
     }
 }
